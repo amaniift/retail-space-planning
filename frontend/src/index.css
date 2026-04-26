@@ -1,0 +1,51 @@
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+.analytics-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 10;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.analytics-panel h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.stat-label {
+  color: #aaa;
+}
+
+.stat-value {
+  font-weight: 600;
+}
+
+.dos-warning {
+  color: #ff4d4d;
+  font-weight: bold;
+}

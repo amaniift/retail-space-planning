@@ -1,0 +1,9 @@
+node_modules/
+__pycache__/
+*.pyc
+dist/
+build/
+.env
+venv/
+.DS_Store
+# Note: retail.db is intentionally NOT ignored as per user request
