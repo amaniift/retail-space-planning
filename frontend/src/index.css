@@ -49,3 +49,96 @@ body, html, #root {
   color: #ff4d4d;
   font-weight: bold;
 }
+
+.product-library {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 250px;
+  max-height: calc(100vh - 40px);
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 10;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.product-library h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 10px;
+}
+
+.product-list {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  box-sizing: border-box;
+}
+
+.search-bar:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.product-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.product-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.product-item.selected {
+  background: rgba(255, 255, 255, 0.2);
+  outline: 1px solid white;
+}
+
+.product-item-title {
+  font-weight: bold;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-item-sku {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.cancel-btn {
+  margin-top: 15px;
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cancel-btn:hover {
+  background: #ff3333;
+}

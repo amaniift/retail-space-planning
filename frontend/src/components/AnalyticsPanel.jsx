@@ -1,8 +1,11 @@
 import React from 'react'
 import { useStore } from '../store'
+import axios from 'axios'
 
 export default function AnalyticsPanel() {
   const selectedProduct = useStore((state) => state.selectedProduct)
+  const setSelectedProduct = useStore((state) => state.setSelectedProduct)
+  const fetchFixtureData = useStore((state) => state.fetchFixtureData)
 
   if (!selectedProduct) {
     return (
@@ -48,6 +51,22 @@ export default function AnalyticsPanel() {
           {dos.toFixed(2)}
         </span>
       </div>
+
+      <button 
+        style={{ marginTop: '20px', width: '100%' }}
+        className="cancel-btn"
+        onClick={async () => {
+          try {
+            await axios.delete(`http://localhost:8000/api/planogram/position/${position.id}`)
+            setSelectedProduct(null)
+            fetchFixtureData()
+          } catch (err) {
+            console.error(err)
+          }
+        }}
+      >
+        Remove from Planogram
+      </button>
     </div>
   )
 }

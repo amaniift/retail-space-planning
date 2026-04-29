@@ -67,20 +67,33 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
   const onDragEnd = async () => {
     if (!meshRef.current) return
     
-    // meshRef.current.position gives the updated position within the PivotControls context
-    // Actually PivotControls updates the matrix of its children, let's extract position
+    // We need to find the world Y to see if they dragged to a new shelf
     const pos = new THREE.Vector3()
     meshRef.current.getWorldPosition(pos)
     
-    // We can also just send the stored local position if PivotControls handles local
-    // For simplicity, we send pos.x and pos.y
+    const fixtureData = useStore.getState().fixtureData
+    let nearestShelfId = positionData.shelf_id
+    let minDiff = Infinity
+    for (const s of fixtureData.shelves) {
+      const diff = Math.abs(s.vertical_position_y - pos.y)
+      if (diff < minDiff) {
+        minDiff = diff
+        nearestShelfId = s.id
+      }
+    }
+
     try {
       const response = await axios.post(`http://localhost:8000/api/planogram/position/${positionData.id}/update`, {
         pos_x: meshRef.current.position.x,
         pos_y: meshRef.current.position.y,
-        facings_wide: positionData.facings_wide
+        facings_wide: positionData.facings_wide,
+        shelf_id: nearestShelfId
       })
       setSelectedProduct(product, response.data, response.data.dos)
+      
+      if (nearestShelfId !== positionData.shelf_id) {
+        useStore.getState().fetchFixtureData()
+      }
     } catch (err) {
       console.error(err)
     }

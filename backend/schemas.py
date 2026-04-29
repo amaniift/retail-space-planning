@@ -58,3 +58,11 @@ class PositionUpdateRequest(BaseModel):
     pos_x: float
     pos_y: float
     facings_wide: int
+    shelf_id: Optional[int] = None
+
+class PositionCreateRequest(BaseModel):
+    product_id: int
+    shelf_id: int
+    pos_x: float
+    pos_y: float
+    facings_wide: int = 1
