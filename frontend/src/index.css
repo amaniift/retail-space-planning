@@ -9,6 +9,18 @@ body, html, #root {
   color: #fff;
 }
 
+body.light, body.light html, body.light #root {
+  background-color: #ffffff;
+  color: #111;
+}
+
+body.light .analytics-panel,
+body.light .product-library {
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
 .analytics-panel {
   position: absolute;
   top: 20px;
@@ -21,6 +33,49 @@ body, html, #root {
   padding: 20px;
   z-index: 10;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.fixture-selector {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 250px;
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 18px 20px;
+  z-index: 11;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.fixture-selector h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+.fixture-selector label {
+  display: block;
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.fixture-selector select {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  color: inherit;
+}
+
+.fixture-selector-hint {
+  margin: 8px 0 0;
+  color: #999;
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 .analytics-panel h2 {
@@ -52,7 +107,7 @@ body, html, #root {
 
 .product-library {
   position: absolute;
-  top: 20px;
+  top: 260px;
   left: 20px;
   width: 250px;
   max-height: calc(100vh - 40px);
@@ -141,4 +196,18 @@ body, html, #root {
 
 .cancel-btn:hover {
   background: #ff3333;
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
 }

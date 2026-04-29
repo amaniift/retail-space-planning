@@ -7,6 +7,7 @@ class Fixture(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     type = Column(String, default="Gondola")
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=True)
     width = Column(Float)
     height = Column(Float)
     depth = Column(Float)
@@ -14,6 +15,7 @@ class Fixture(Base):
     number_of_shelves = Column(Integer)
 
     shelves = relationship("Shelf", back_populates="fixture")
+    store = relationship("Store", back_populates="fixtures")
 
 
 class Shelf(Base):
@@ -41,6 +43,15 @@ class Product(Base):
 
     performance = relationship("PerformanceData", back_populates="product", uselist=False)
     positions = relationship("Position", back_populates="product")
+
+
+class Store(Base):
+    __tablename__ = "stores"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    region = Column(String, nullable=True)
+
+    fixtures = relationship("Fixture", back_populates="store")
 
 
 class PerformanceData(Base):

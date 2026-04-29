@@ -1,11 +1,26 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 from typing import List
 import models, schemas
 from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
+
+
+def ensure_schema():
+    inspector = inspect(engine)
+    if "fixtures" not in inspector.get_table_names():
+        return
+
+    column_names = {column["name"] for column in inspector.get_columns("fixtures")}
+    if "store_id" not in column_names:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE fixtures ADD COLUMN store_id INTEGER"))
+
+
+ensure_schema()
 
 app = FastAPI()
 
@@ -38,6 +53,58 @@ def get_planogram(fixture_id: int, db: Session = Depends(get_db)):
 @app.get("/api/products", response_model=List[schemas.ProductSchema])
 def get_products(db: Session = Depends(get_db)):
     return db.query(models.Product).all()
+
+
+@app.get("/api/stores", response_model=List[schemas.StoreSchema])
+def get_stores(db: Session = Depends(get_db)):
+    return db.query(models.Store).all()
+
+
+@app.get("/api/store/{store_id}/fixtures", response_model=List[schemas.FixtureSchema])
+def get_store_fixtures(store_id: int, db: Session = Depends(get_db)):
+    fixtures = db.query(models.Fixture).filter(models.Fixture.store_id == store_id).all()
+    return fixtures
+
+
+@app.get("/api/planogram/{fixture_id}/analytics")
+def get_fixture_analytics(fixture_id: int, db: Session = Depends(get_db)):
+    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    if not fixture:
+        raise HTTPException(status_code=404, detail="Fixture not found")
+
+    # Aggregate metrics per shelf
+    shelves = db.query(models.Shelf).filter(models.Shelf.fixture_id == fixture_id).all()
+    analytics = {"fixture_id": fixture_id, "shelves": []}
+
+    for shelf in shelves:
+        positions = db.query(models.Position).filter(models.Position.shelf_id == shelf.id).all()
+        total_capacity = 0
+        total_daily_movement = 0.0
+        est_daily_revenue = 0.0
+
+        for pos in positions:
+            perf = pos.product.performance
+            daily_mov = perf.daily_unit_movement if perf and perf.daily_unit_movement > 0 else 0.0
+            unit_cost = perf.unit_cost if perf and perf.unit_cost else 0.0
+            capacity = pos.facings_wide * pos.facings_high * pos.facings_deep
+            total_capacity += capacity
+            total_daily_movement += daily_mov
+            # Use unit_cost as proxy for price to estimate revenue when selling_price unavailable
+            est_daily_revenue += daily_mov * unit_cost * pos.facings_wide
+
+        avg_dos = (total_capacity / total_daily_movement) if total_daily_movement > 0 else None
+        analytics["shelves"].append({
+            "shelf_id": shelf.id,
+            "vertical_position_y": shelf.vertical_position_y,
+            "width": shelf.width,
+            "depth": shelf.depth,
+            "total_capacity": total_capacity,
+            "total_daily_movement": total_daily_movement,
+            "estimated_daily_revenue": est_daily_revenue,
+            "avg_dos": avg_dos
+        })
+
+    return analytics
 
 @app.post("/api/planogram/position/add")
 def add_position(request: schemas.PositionCreateRequest, db: Session = Depends(get_db)):

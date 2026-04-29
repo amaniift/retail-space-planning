@@ -1,13 +1,16 @@
 from models import Fixture, Shelf, Product, Position, PerformanceData
 from sqlalchemy.orm import Session
 
-def optimize_shelf_layout(fixture_id: int, db: Session):
+def optimize_shelf_layout(fixture_id: int, db: Session, product_ids=None):
     fixture = db.query(Fixture).filter(Fixture.id == fixture_id).first()
     if not fixture:
         return
         
-    # Get all products and sort by movement desc
-    products = db.query(Product).join(PerformanceData).order_by(PerformanceData.daily_unit_movement.desc()).all()
+    # Get products and sort by movement desc; allow fixture-specific seeding when product_ids is provided.
+    product_query = db.query(Product).join(PerformanceData)
+    if product_ids:
+        product_query = product_query.filter(Product.id.in_(product_ids))
+    products = product_query.order_by(PerformanceData.daily_unit_movement.desc()).all()
     
     # Get shelves for fixture, ordered bottom to top
     shelves = db.query(Shelf).filter(Shelf.fixture_id == fixture_id).order_by(Shelf.vertical_position_y.asc()).all()

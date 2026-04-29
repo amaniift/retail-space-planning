@@ -46,12 +46,20 @@ class FixtureSchema(BaseModel):
     id: int
     name: str
     type: str
+    store_id: Optional[int] = None
     width: float
     height: float
     depth: float
     base_height: float
     number_of_shelves: int
     shelves: List[ShelfSchema] = []
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StoreSchema(BaseModel):
+    id: int
+    name: str
+    region: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 class PositionUpdateRequest(BaseModel):
