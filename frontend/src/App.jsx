@@ -3,6 +3,8 @@ import Scene from './components/Scene'
 import AnalyticsPanel from './components/AnalyticsPanel'
 import ProductLibrary from './components/ProductLibrary'
 import FixtureSelector from './components/FixtureSelector'
+import VersionControl from './components/VersionControl'
+import TemplateLibrary from './components/TemplateLibrary'
 import { useStore } from './store'
 
 function App() {
@@ -27,6 +29,8 @@ function App() {
       </button>
       <FixtureSelector />
       <ProductLibrary />
+      <VersionControl />
+      <TemplateLibrary />
       <Scene />
       <AnalyticsPanel />
     </div>

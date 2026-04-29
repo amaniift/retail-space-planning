@@ -69,7 +69,7 @@ export default function AnalyticsPanel() {
       >
         Back to Fixture Summary
       </button>
-      
+
       <div className="stat-row">
         <span className="stat-label">SKU:</span>
         <span className="stat-value">{product.sku}</span>
@@ -97,11 +97,13 @@ export default function AnalyticsPanel() {
         </span>
       </div>
 
-      <button 
+      <button
         style={{ marginTop: '20px', width: '100%' }}
         className="cancel-btn"
         onClick={async () => {
           try {
+            // push undo snapshot before deleting
+            useStore.getState().pushUndoSnapshot()
             await axios.delete(`http://localhost:8000/api/planogram/position/${position.id}`)
             setSelectedProduct(null)
             fetchFixtureData()

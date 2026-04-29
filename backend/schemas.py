@@ -1,12 +1,14 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 
+
 class PerformanceDataSchema(BaseModel):
     id: int
     product_id: int
     daily_unit_movement: float
     unit_cost: float
     model_config = ConfigDict(from_attributes=True)
+
 
 class ProductSchema(BaseModel):
     id: int
@@ -19,6 +21,7 @@ class ProductSchema(BaseModel):
     color_hex: str
     performance: Optional[PerformanceDataSchema] = None
     model_config = ConfigDict(from_attributes=True)
+
 
 class PositionSchema(BaseModel):
     id: int
@@ -33,6 +36,7 @@ class PositionSchema(BaseModel):
     product: ProductSchema
     model_config = ConfigDict(from_attributes=True)
 
+
 class ShelfSchema(BaseModel):
     id: int
     fixture_id: int
@@ -41,6 +45,7 @@ class ShelfSchema(BaseModel):
     depth: float
     positions: List[PositionSchema] = []
     model_config = ConfigDict(from_attributes=True)
+
 
 class FixtureSchema(BaseModel):
     id: int
@@ -62,11 +67,13 @@ class StoreSchema(BaseModel):
     region: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
+
 class PositionUpdateRequest(BaseModel):
     pos_x: float
     pos_y: float
     facings_wide: int
     shelf_id: Optional[int] = None
+
 
 class PositionCreateRequest(BaseModel):
     product_id: int
@@ -74,3 +81,14 @@ class PositionCreateRequest(BaseModel):
     pos_x: float
     pos_y: float
     facings_wide: int = 1
+
+
+class FixtureCreateRequest(BaseModel):
+    store_id: int
+    name: str
+    type: str = "Gondola"
+    width: float
+    height: float
+    depth: float
+    base_height: float = 200.0
+    number_of_shelves: int = 4

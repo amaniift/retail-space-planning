@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 from typing import List
-import models, schemas
+import models
+import schemas
 from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -14,19 +15,23 @@ def ensure_schema():
     if "fixtures" not in inspector.get_table_names():
         return
 
-    column_names = {column["name"] for column in inspector.get_columns("fixtures")}
+    column_names = {column["name"]
+                    for column in inspector.get_columns("fixtures")}
     if "store_id" not in column_names:
         with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE fixtures ADD COLUMN store_id INTEGER"))
+            connection.execute(
+                text("ALTER TABLE fixtures ADD COLUMN store_id INTEGER"))
 
 
 ensure_schema()
 
 app = FastAPI()
 
+
 @app.get("/")
 def read_root():
     return {"message": "Retail Space Planning API is running. Go to /api/planogram/1 for data."}
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,6 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -43,12 +49,15 @@ def get_db():
     finally:
         db.close()
 
+
 @app.get("/api/planogram/{fixture_id}", response_model=schemas.FixtureSchema)
 def get_planogram(fixture_id: int, db: Session = Depends(get_db)):
-    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    fixture = db.query(models.Fixture).filter(
+        models.Fixture.id == fixture_id).first()
     if not fixture:
         raise HTTPException(status_code=404, detail="Fixture not found")
     return fixture
+
 
 @app.get("/api/products", response_model=List[schemas.ProductSchema])
 def get_products(db: Session = Depends(get_db)):
@@ -62,22 +71,62 @@ def get_stores(db: Session = Depends(get_db)):
 
 @app.get("/api/store/{store_id}/fixtures", response_model=List[schemas.FixtureSchema])
 def get_store_fixtures(store_id: int, db: Session = Depends(get_db)):
-    fixtures = db.query(models.Fixture).filter(models.Fixture.store_id == store_id).all()
+    fixtures = db.query(models.Fixture).filter(
+        models.Fixture.store_id == store_id).all()
     return fixtures
+
+
+@app.post("/api/fixtures", response_model=schemas.FixtureSchema)
+def create_fixture(request: schemas.FixtureCreateRequest, db: Session = Depends(get_db)):
+    store = db.query(models.Store).filter(
+        models.Store.id == request.store_id).first()
+    if not store:
+        raise HTTPException(status_code=404, detail="Store not found")
+
+    fixture = models.Fixture(
+        name=request.name,
+        type=request.type,
+        store_id=request.store_id,
+        width=request.width,
+        height=request.height,
+        depth=request.depth,
+        base_height=request.base_height,
+        number_of_shelves=request.number_of_shelves,
+    )
+    db.add(fixture)
+    db.commit()
+    db.refresh(fixture)
+
+    shelf_spacing = 400.0
+    for index in range(request.number_of_shelves):
+        shelf = models.Shelf(
+            fixture_id=fixture.id,
+            vertical_position_y=request.base_height + index * shelf_spacing,
+            width=request.width,
+            depth=request.depth,
+        )
+        db.add(shelf)
+
+    db.commit()
+    db.refresh(fixture)
+    return fixture
 
 
 @app.get("/api/planogram/{fixture_id}/analytics")
 def get_fixture_analytics(fixture_id: int, db: Session = Depends(get_db)):
-    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    fixture = db.query(models.Fixture).filter(
+        models.Fixture.id == fixture_id).first()
     if not fixture:
         raise HTTPException(status_code=404, detail="Fixture not found")
 
     # Aggregate metrics per shelf
-    shelves = db.query(models.Shelf).filter(models.Shelf.fixture_id == fixture_id).all()
+    shelves = db.query(models.Shelf).filter(
+        models.Shelf.fixture_id == fixture_id).all()
     analytics = {"fixture_id": fixture_id, "shelves": []}
 
     for shelf in shelves:
-        positions = db.query(models.Position).filter(models.Position.shelf_id == shelf.id).all()
+        positions = db.query(models.Position).filter(
+            models.Position.shelf_id == shelf.id).all()
         total_capacity = 0
         total_daily_movement = 0.0
         est_daily_revenue = 0.0
@@ -92,7 +141,8 @@ def get_fixture_analytics(fixture_id: int, db: Session = Depends(get_db)):
             # Use unit_cost as proxy for price to estimate revenue when selling_price unavailable
             est_daily_revenue += daily_mov * unit_cost * pos.facings_wide
 
-        avg_dos = (total_capacity / total_daily_movement) if total_daily_movement > 0 else None
+        avg_dos = (total_capacity /
+                   total_daily_movement) if total_daily_movement > 0 else None
         analytics["shelves"].append({
             "shelf_id": shelf.id,
             "vertical_position_y": shelf.vertical_position_y,
@@ -106,18 +156,26 @@ def get_fixture_analytics(fixture_id: int, db: Session = Depends(get_db)):
 
     return analytics
 
+
 @app.post("/api/planogram/position/add")
 def add_position(request: schemas.PositionCreateRequest, db: Session = Depends(get_db)):
-    shelf = db.query(models.Shelf).filter(models.Shelf.id == request.shelf_id).first()
-    product = db.query(models.Product).filter(models.Product.id == request.product_id).first()
+    shelf = db.query(models.Shelf).filter(
+        models.Shelf.id == request.shelf_id).first()
+    product = db.query(models.Product).filter(
+        models.Product.id == request.product_id).first()
     if not shelf or not product:
-        raise HTTPException(status_code=404, detail="Shelf or Product not found")
-        
+        raise HTTPException(
+            status_code=404, detail="Shelf or Product not found")
+
     available_height = 400.0
-    facings_high = int(available_height // product.height) if available_height >= product.height else 1
-    if facings_high < 1: facings_high = 1
-    facings_deep = int(shelf.depth // product.depth) if shelf.depth >= product.depth else 1
-    if facings_deep < 1: facings_deep = 1
+    facings_high = int(
+        available_height // product.height) if available_height >= product.height else 1
+    if facings_high < 1:
+        facings_high = 1
+    facings_deep = int(
+        shelf.depth // product.depth) if shelf.depth >= product.depth else 1
+    if facings_deep < 1:
+        facings_deep = 1
 
     pos = models.Position(
         shelf_id=request.shelf_id,
@@ -133,34 +191,38 @@ def add_position(request: schemas.PositionCreateRequest, db: Session = Depends(g
     db.commit()
     return {"message": "Position added", "position_id": pos.id}
 
+
 @app.delete("/api/planogram/position/{position_id}")
 def delete_position(position_id: int, db: Session = Depends(get_db)):
-    pos = db.query(models.Position).filter(models.Position.id == position_id).first()
+    pos = db.query(models.Position).filter(
+        models.Position.id == position_id).first()
     if pos:
         db.delete(pos)
         db.commit()
     return {"message": "Deleted"}
 
+
 @app.post("/api/planogram/position/{position_id}/update")
 def update_position(position_id: int, request: schemas.PositionUpdateRequest, db: Session = Depends(get_db)):
-    pos = db.query(models.Position).filter(models.Position.id == position_id).first()
+    pos = db.query(models.Position).filter(
+        models.Position.id == position_id).first()
     if not pos:
         raise HTTPException(status_code=404, detail="Position not found")
-        
+
     pos.pos_x = request.pos_x
     pos.pos_y = request.pos_y
     pos.facings_wide = request.facings_wide
     if request.shelf_id is not None:
         pos.shelf_id = request.shelf_id
-    
+
     db.commit()
     db.refresh(pos)
-    
+
     capacity = pos.facings_wide * pos.facings_high * pos.facings_deep
     perf = pos.product.performance
     daily_mov = perf.daily_unit_movement if perf and perf.daily_unit_movement > 0 else 0.1
     dos = capacity / daily_mov
-    
+
     return {
         "id": pos.id,
         "pos_x": pos.pos_x,

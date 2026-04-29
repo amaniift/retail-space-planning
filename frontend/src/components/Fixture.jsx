@@ -17,6 +17,8 @@ export default function Fixture({ data }) {
     const clickX = e.point.x - xOffset
 
     try {
+      // save snapshot for undo
+      useStore.getState().pushUndoSnapshot()
       await axios.post('http://localhost:8000/api/planogram/position/add', {
         product_id: pendingPlacementProduct.id,
         shelf_id: shelf.id,
@@ -29,7 +31,7 @@ export default function Fixture({ data }) {
       console.error(err)
     }
   }
-  
+
   return (
     <group position={[xOffset, 0, 0]}>
       {/* Floor / Ground Plane */}
@@ -42,19 +44,19 @@ export default function Fixture({ data }) {
         <boxGeometry args={[data.width, data.height, 10]} />
         <meshStandardMaterial color="#444" />
       </mesh>
-      
+
       {data.shelves.map((shelf) => (
         <group key={shelf.id}>
-          <mesh 
+          <mesh
             position={[shelf.width / 2, shelf.vertical_position_y, 0]}
             onClick={(e) => handleShelfClick(e, shelf)}
-            onPointerOver={(e) => { if(pendingPlacementProduct) document.body.style.cursor = 'crosshair' }}
-            onPointerOut={(e) => { if(pendingPlacementProduct) document.body.style.cursor = 'default' }}
+            onPointerOver={(e) => { if (pendingPlacementProduct) document.body.style.cursor = 'crosshair' }}
+            onPointerOut={(e) => { if (pendingPlacementProduct) document.body.style.cursor = 'default' }}
           >
             <boxGeometry args={[shelf.width, 20, shelf.depth]} />
             <meshStandardMaterial color="#666" />
           </mesh>
-          
+
           {shelf.positions.map((pos) => (
             <ProductMesh key={pos.id} positionData={pos} shelfY={shelf.vertical_position_y} allPositions={shelf.positions} />
           ))}

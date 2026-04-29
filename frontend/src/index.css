@@ -1,4 +1,6 @@
-body, html, #root {
+body,
+html,
+#root {
   margin: 0;
   padding: 0;
   width: 100vw;
@@ -9,7 +11,9 @@ body, html, #root {
   color: #fff;
 }
 
-body.light, body.light html, body.light #root {
+body.light,
+body.light html,
+body.light #root {
   background-color: #ffffff;
   color: #111;
 }
@@ -18,7 +22,7 @@ body.light .analytics-panel,
 body.light .product-library {
   background: rgba(255, 255, 255, 0.95);
   color: #111;
-  border: 1px solid rgba(0,0,0,0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .analytics-panel {
@@ -210,4 +214,96 @@ body.light .product-library {
 
 .secondary-btn:hover {
   background: rgba(255, 255, 255, 0.14);
+}
+
+.version-control {
+  position: absolute;
+  top: 20px;
+  right: 340px;
+  width: 320px;
+  background: rgba(30, 30, 30, 0.85);
+  padding: 16px;
+  border-radius: 12px;
+  z-index: 11;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.template-library {
+  position: absolute;
+  top: 220px;
+  right: 340px;
+  width: 320px;
+  background: rgba(30, 30, 30, 0.85);
+  padding: 16px;
+  border-radius: 12px;
+  z-index: 11;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  max-height: calc(100vh - 260px);
+  overflow: auto;
+}
+
+.primary-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.create-fixture-form {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.create-fixture-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #b7b7b7;
+}
+
+.create-fixture-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  color: inherit;
+}
+
+.fixture-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fixture-form-error,
+.fixture-form-success {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.fixture-form-error {
+  background: rgba(255, 77, 77, 0.12);
+  color: #ff9d9d;
+  border: 1px solid rgba(255, 77, 77, 0.24);
+}
+
+.fixture-form-success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #9df0bb;
+  border: 1px solid rgba(34, 197, 94, 0.24);
+}
+
+.primary-btn:hover {
+  filter: brightness(1.06)
 }
