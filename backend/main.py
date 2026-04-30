@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 from collections import Counter
-from typing import List
+from typing import List, Optional
 import math
 import models
 import schemas
@@ -126,7 +126,7 @@ def validate_position_request(
     facings_wide: int,
     facings_high: int,
     facings_deep: int,
-    ignore_position_id: int | None = None,
+    ignore_position_id: Optional[int] = None,
 ):
     warnings = []
     facings_wide, facing_warnings, daily_mov = resolve_facings_wide(
