@@ -27,6 +27,8 @@ export default function TemplateLibrary() {
     const products = useStore((s) => s.products)
     const fetchFixtureData = useStore((s) => s.fetchFixtureData)
     const pushUndoSnapshot = useStore((s) => s.pushUndoSnapshot)
+    const [isMinimized, setIsMinimized] = React.useState(false)
+    const [isMinimized, setIsMinimized] = React.useState(false)
 
     const applyTemplate = async (template) => {
         if (!fixtureData) return
@@ -62,7 +64,13 @@ export default function TemplateLibrary() {
 
     return (
         <div className="template-library">
-            <h3>Fixture Templates</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMinimized ? 0 : 8 }}>
+                <h3 style={{ margin: 0 }}>Fixture Templates</h3>
+                <button onClick={() => setIsMinimized(!isMinimized)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'flex', alignItems: 'center' }}>
+                    {isMinimized ? '+' : '−'}
+                </button>
+            </div>
+            {!isMinimized && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {TEMPLATES.map((t) => (
                     <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
@@ -76,6 +84,7 @@ export default function TemplateLibrary() {
                     </div>
                 ))}
             </div>
+            )}
         </div>
     )
 }

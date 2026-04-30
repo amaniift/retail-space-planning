@@ -10,6 +10,8 @@ export default function VersionControl() {
     const redo = useStore((s) => s.redo)
     const [versions, setVersions] = useState([])
     const [name, setName] = useState('')
+    const [isMinimized, setIsMinimized] = useState(false)
+    const [isMinimized, setIsMinimized] = useState(false)
 
     useEffect(() => {
         const raw = localStorage.getItem('planogram_versions')
@@ -80,7 +82,14 @@ export default function VersionControl() {
 
     return (
         <div className="version-control">
-            <h3>Planogram Versions</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMinimized ? 0 : 8 }}>
+                <h3 style={{ margin: 0 }}>Planogram Versions</h3>
+                <button onClick={() => setIsMinimized(!isMinimized)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'flex', alignItems: 'center' }}>
+                    {isMinimized ? '+' : '−'}
+                </button>
+            </div>
+            {!isMinimized && (
+            <>
             <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <button onClick={() => undo()} className="secondary-btn">Undo</button>
                 <button onClick={() => redo()} className="secondary-btn">Redo</button>
@@ -105,6 +114,9 @@ export default function VersionControl() {
                         </div>
                     </div>
                 ))}
+            </div>
+            </>
+            )}
             </div>
         </div>
     )

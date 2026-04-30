@@ -27,6 +27,8 @@ export default function AnalyticsPanel() {
   const [recommendations, setRecommendations] = React.useState(null)
   const [loadingRecs, setLoadingRecs] = React.useState(false)
   const [commentText, setCommentText] = React.useState('')
+  const [isMinimized, setIsMinimized] = React.useState(false)
+  const [isMinimized, setIsMinimized] = React.useState(false)
 
   const freshPosition = React.useMemo(() => {
     if (!fixtureData || !selectedProduct?.position) return selectedProduct?.position
@@ -40,7 +42,14 @@ export default function AnalyticsPanel() {
   if (!selectedProduct) {
     return (
       <div className="analytics-panel">
-        <h2>Analytics</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMinimized ? 0 : 16 }}>
+          <h2 style={{ margin: 0 }}>Analytics</h2>
+          <button onClick={() => setIsMinimized(!isMinimized)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'flex', alignItems: 'center' }}>
+            {isMinimized ? '+' : '−'}
+          </button>
+        </div>
+        {!isMinimized && (
+        <>
         {fixtureAnalytics ? (
           <div>
             <div className="stat-row">
@@ -133,9 +142,10 @@ export default function AnalyticsPanel() {
               </div>
             )}
           </div>
-          </div>
         ) : (
           <p>Loading fixture analytics…</p>
+        )}
+        </>
         )}
       </div>
     )
@@ -148,7 +158,14 @@ export default function AnalyticsPanel() {
 
   return (
     <div className="analytics-panel">
-      <h2>Analytics</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMinimized ? 0 : 16 }}>
+        <h2 style={{ margin: 0 }}>Analytics</h2>
+        <button onClick={() => setIsMinimized(!isMinimized)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'flex', alignItems: 'center' }}>
+          {isMinimized ? '+' : '−'}
+        </button>
+      </div>
+      {!isMinimized && (
+      <>
       <button
         className="secondary-btn"
         onClick={clearSelectedProduct}
@@ -238,6 +255,8 @@ export default function AnalyticsPanel() {
       >
         Remove from Planogram
       </button>
+      </>
+      )}
     </div>
   )
 }
