@@ -111,7 +111,7 @@ body.light .product-library {
 
 .product-library {
   position: absolute;
-  top: 260px;
+  top: 330px;
   left: 20px;
   width: 250px;
   max-height: calc(100vh - 40px);
@@ -219,20 +219,22 @@ body.light .product-library {
 .version-control {
   position: absolute;
   top: 20px;
-  right: 340px;
-  width: 320px;
+  right: 360px;
+  width: 300px;
   background: rgba(30, 30, 30, 0.85);
   padding: 16px;
   border-radius: 12px;
   z-index: 11;
   border: 1px solid rgba(255, 255, 255, 0.06);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .template-library {
   position: absolute;
   top: 220px;
-  right: 340px;
-  width: 320px;
+  right: 360px;
+  width: 300px;
   background: rgba(30, 30, 30, 0.85);
   padding: 16px;
   border-radius: 12px;
@@ -240,6 +242,21 @@ body.light .product-library {
   border: 1px solid rgba(255, 255, 255, 0.06);
   max-height: calc(100vh - 260px);
   overflow: auto;
+  box-sizing: border-box;
+}
+
+.version-control > div:first-of-type,
+.version-control > div:nth-of-type(2) {
+  flex-wrap: wrap;
+}
+
+.version-control > div:nth-of-type(2) input {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.template-library > div > div {
+  min-width: 0;
 }
 
 .primary-btn {

@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { Edges, PivotControls } from '@react-three/drei'
+import { PivotControls, RoundedBox } from '@react-three/drei'
 import { useStore } from '../store'
 import axios from 'axios'
 import * as THREE from 'three'
@@ -115,9 +115,15 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
         position={[positionData.pos_x, calcY, 0]}
         onClick={handleClick}
       >
-        <boxGeometry args={[w, h, d]} />
-        <meshLambertMaterial color={product.color_hex} />
-        <Edges scale={1} threshold={15} color="rgba(0,0,0,0.5)" />
+        <RoundedBox args={[w, h, d]} radius={Math.min(w, h, d) * 0.08} smoothness={4}>
+          <meshPhysicalMaterial
+            color={product.color_hex}
+            roughness={0.42}
+            metalness={0.08}
+            clearcoat={0.18}
+            clearcoatRoughness={0.55}
+          />
+        </RoundedBox>
       </mesh>
     </PivotControls>
   )
