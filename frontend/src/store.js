@@ -129,6 +129,9 @@ export const useStore = create((set) => ({
       console.error(error)
     }
   },
+  previewRecommendations: [],
+  setPreviewRecommendations: (recs) => set({ previewRecommendations: recs || [] }),
+  clearPreviewRecommendations: () => set({ previewRecommendations: [] }),
   pendingPlacementProduct: null,
   setPendingPlacementProduct: (product) => set({ pendingPlacementProduct: product }),
   theme: 'dark',

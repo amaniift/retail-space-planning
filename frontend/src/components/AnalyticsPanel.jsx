@@ -49,51 +49,80 @@ export default function AnalyticsPanel() {
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 12 }}>
-              <button
-                className="primary-btn"
-                onClick={async () => {
-                  if (!fixtureData) return
-                  try {
-                    setLoadingRecs(true)
-                    const res = await axios.post(`http://localhost:8000/api/planogram/${fixtureData.id}/recommendations`, {})
-                    setRecommendations(res.data.recommendations || [])
-                  } catch (err) {
-                    console.error(err)
-                  } finally {
-                    setLoadingRecs(false)
-                  }
-                }}
-              >
-                {loadingRecs ? 'Generating…' : 'Get Recommendations'}
-              </button>
+          <div style={{ marginTop: 12 }}>
+            <button
+              className="primary-btn"
+              onClick={async () => {
+                if (!fixtureData) return
+                try {
+                  setLoadingRecs(true)
+                  const res = await axios.post(`http://localhost:8000/api/planogram/${fixtureData.id}/recommendations`, {})
+                  const recs = res.data.recommendations || []
+                  setRecommendations(recs)
+                  useStore.getState().setPreviewRecommendations(recs)
+                } catch (err) {
+                  console.error(err)
+                } finally {
+                  setLoadingRecs(false)
+                }
+              }}
+            >
+              {loadingRecs ? 'Generating…' : 'Get Recommendations'}
+            </button>
 
-              <button
-                className="secondary-btn"
-                style={{ marginLeft: 8 }}
-                disabled={!recommendations || recommendations.length === 0}
-                onClick={async () => {
-                  if (!fixtureData || !recommendations) return
-                  try {
-                    // save undo snapshot
-                    useStore.getState().pushUndoSnapshot()
-                    await axios.post(`http://localhost:8000/api/planogram/${fixtureData.id}/apply_recommendations`, {})
-                    setRecommendations(null)
-                    fetchFixtureData()
-                  } catch (err) {
-                    console.error(err)
-                  }
-                }}
-              >
-                Apply Recommendations
-              </button>
+            <button
+              className="secondary-btn"
+              style={{ marginLeft: 8 }}
+              disabled={!recommendations || recommendations.length === 0}
+              onClick={async () => {
+                if (!fixtureData || !recommendations) return
+                try {
+                  // save undo snapshot
+                  useStore.getState().pushUndoSnapshot()
+                  await axios.post(`http://localhost:8000/api/planogram/${fixtureData.id}/apply_recommendations`, {})
+                  setRecommendations(null)
+                  useStore.getState().clearPreviewRecommendations()
+                  fetchFixtureData()
+                } catch (err) {
+                  console.error(err)
+                }
+              }}
+            >
+              Apply Recommendations
+            </button>
 
-              {recommendations && (
-                <div style={{ marginTop: 8, color: '#aaa', fontSize: '0.9rem' }}>
-                  Suggested placements: {recommendations.length}
-                </div>
-              )}
-            </div>
+            <button
+              className="secondary-btn"
+              style={{ marginLeft: 8 }}
+              disabled={!recommendations || recommendations.length === 0}
+              onClick={() => {
+                setRecommendations(null)
+                useStore.getState().clearPreviewRecommendations()
+              }}
+            >
+              Clear Preview
+            </button>
+
+            {recommendations && (
+              <div style={{ marginTop: 8, color: '#aaa', fontSize: '0.9rem' }}>
+                Suggested placements: {recommendations.length}
+              </div>
+            )}
+
+            {recommendations && recommendations.length > 0 && (
+              <div style={{ marginTop: 8, maxHeight: 160, overflow: 'auto', padding: 8, border: '1px solid rgba(255,255,255,0.04)', borderRadius: 8 }}>
+                {recommendations.map((r, i) => {
+                  const prod = useStore.getState().products.find(p => p.id === r.product_id)
+                  return (
+                    <div key={i} style={{ marginBottom: 8 }}>
+                      <div style={{ fontWeight: 600 }}>{prod ? prod.name : `Product ${r.product_id}`}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#bbb' }}>Shelf: {r.shelf_id} • X: {r.pos_x.toFixed(1)} • Facings: {r.facings_wide} • HxD: {r.facings_high}x{r.facings_deep}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
           </div>
         ) : (
           <p>Loading fixture analytics…</p>
