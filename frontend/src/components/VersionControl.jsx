@@ -11,7 +11,6 @@ export default function VersionControl() {
     const [versions, setVersions] = useState([])
     const [name, setName] = useState('')
     const [isMinimized, setIsMinimized] = useState(false)
-    const [isMinimized, setIsMinimized] = useState(false)
 
     useEffect(() => {
         const raw = localStorage.getItem('planogram_versions')

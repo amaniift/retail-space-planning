@@ -28,7 +28,6 @@ export default function AnalyticsPanel() {
   const [loadingRecs, setLoadingRecs] = React.useState(false)
   const [commentText, setCommentText] = React.useState('')
   const [isMinimized, setIsMinimized] = React.useState(false)
-  const [isMinimized, setIsMinimized] = React.useState(false)
 
   const freshPosition = React.useMemo(() => {
     if (!fixtureData || !selectedProduct?.position) return selectedProduct?.position

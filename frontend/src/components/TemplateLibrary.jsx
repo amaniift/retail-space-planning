@@ -28,7 +28,6 @@ export default function TemplateLibrary() {
     const fetchFixtureData = useStore((s) => s.fetchFixtureData)
     const pushUndoSnapshot = useStore((s) => s.pushUndoSnapshot)
     const [isMinimized, setIsMinimized] = React.useState(false)
-    const [isMinimized, setIsMinimized] = React.useState(false)
 
     const applyTemplate = async (template) => {
         if (!fixtureData) return
