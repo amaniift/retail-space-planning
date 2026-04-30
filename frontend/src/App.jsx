@@ -5,17 +5,20 @@ import ProductLibrary from './components/ProductLibrary'
 import FixtureSelector from './components/FixtureSelector'
 import VersionControl from './components/VersionControl'
 import TemplateLibrary from './components/TemplateLibrary'
+import WorkflowPanel from './components/WorkflowPanel'
 import { useStore } from './store'
 
 function App() {
   const fetchProducts = useStore((state) => state.fetchProducts)
+  const fetchUsers = useStore((state) => state.fetchUsers)
   const pendingPlacementProduct = useStore((state) => state.pendingPlacementProduct)
   const toggleTheme = useStore((state) => state.toggleTheme)
   const theme = useStore((state) => state.theme)
 
   useEffect(() => {
     fetchProducts()
-  }, [fetchProducts])
+    fetchUsers()
+  }, [fetchProducts, fetchUsers])
 
   // apply theme class to body
   useEffect(() => {
@@ -27,6 +30,7 @@ function App() {
       <button onClick={toggleTheme} style={{ position: 'absolute', top: 20, right: 340, zIndex: 50 }}>
         Toggle Theme
       </button>
+      <WorkflowPanel />
       <FixtureSelector />
       <ProductLibrary />
       <VersionControl />

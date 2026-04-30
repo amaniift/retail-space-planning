@@ -136,6 +136,16 @@ export default function AnalyticsPanel() {
 
   const capacity = position.facings_wide * position.facings_high * position.facings_deep
 
+  const [commentText, setCommentText] = React.useState('')
+  const freshPosition = React.useMemo(() => {
+    if (!fixtureData || !position) return position
+    for (const shelf of fixtureData.shelves) {
+      const found = shelf.positions.find(p => p.id === position.id)
+      if (found) return found
+    }
+    return position
+  }, [fixtureData, position])
+
   return (
     <div className="analytics-panel">
       <h2>Analytics</h2>
@@ -172,6 +182,43 @@ export default function AnalyticsPanel() {
         <span className={`stat-value ${isDosWarning ? 'dos-warning' : ''}`}>
           {dos.toFixed(2)}
         </span>
+      </div>
+
+      <hr style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.1)', margin: '15px 0' }} />
+      
+      <h3 style={{ fontSize: '1rem', marginTop: 0 }}>Comments</h3>
+      <div style={{ maxHeight: 150, overflowY: 'auto', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {freshPosition.comments && freshPosition.comments.length > 0 ? (
+          freshPosition.comments.map(c => (
+            <div key={c.id} style={{ background: 'rgba(255,255,255,0.05)', padding: 8, borderRadius: 6, fontSize: '0.85rem' }}>
+                <div style={{ fontWeight: 600, marginBottom: 2 }}>{c.user?.username || 'Unknown'} <span style={{ fontWeight: 'normal', color: '#888', fontSize: '0.75rem' }}>• {new Date(c.created_at).toLocaleString()}</span></div>
+                <div style={{ color: '#ddd' }}>{c.text}</div>
+            </div>
+          ))
+        ) : (
+          <div style={{ fontSize: '0.85rem', color: '#888' }}>No comments yet.</div>
+        )}
+      </div>
+      
+      <div style={{ display: 'flex', gap: 8, marginBottom: 15 }}>
+        <input 
+          type="text" 
+          value={commentText} 
+          onChange={e => setCommentText(e.target.value)} 
+          placeholder="Add a comment..."
+          style={{ flex: 1, padding: '8px', minWidth: 0, borderRadius: 6, background: 'rgba(0,0,0,0.3)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
+        />
+        <button 
+          className="primary-btn" 
+          onClick={() => {
+            if(commentText) {
+              useStore.getState().addComment(freshPosition.id, commentText)
+              setCommentText('')
+            }
+          }}
+        >
+          Post
+        </button>
       </div>
 
       <button

@@ -224,6 +224,20 @@ body.light .product-library {
   background: rgba(255, 255, 255, 0.14);
 }
 
+.workflow-panel {
+  position: absolute;
+  top: 20px;
+  left: 290px;
+  width: 320px;
+  background: rgba(30, 30, 30, 0.85);
+  padding: 16px;
+  border-radius: 12px;
+  z-index: 11;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+}
+
 .version-control {
   position: absolute;
   top: 20px;

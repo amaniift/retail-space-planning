@@ -19,6 +19,7 @@ export const useStore = create((set) => ({
       }
       const response = await axios.get(`http://localhost:8000/api/planogram/${id}`)
       set({ fixtureData: response.data })
+      useStore.getState().fetchWorkflow(id)
     } catch (error) {
       console.error(error)
     }
@@ -134,6 +135,58 @@ export const useStore = create((set) => ({
   clearPreviewRecommendations: () => set({ previewRecommendations: [] }),
   pendingPlacementProduct: null,
   setPendingPlacementProduct: (product) => set({ pendingPlacementProduct: product }),
+  
+  users: [],
+  currentUser: null,
+  fetchUsers: async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/users')
+      set({ users: response.data })
+      if (response.data.length > 0) set({ currentUser: response.data[0] })
+    } catch (e) {
+      console.error(e)
+    }
+  },
+  setCurrentUser: (userId) => set((state) => ({
+    currentUser: state.users.find(u => u.id === parseInt(userId)) || state.currentUser
+  })),
+
+  workflow: null,
+  fetchWorkflow: async (fixtureId) => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/planogram/${fixtureId}/workflow`)
+      set({ workflow: res.data })
+    } catch (e) {
+      console.error(e)
+    }
+  },
+  updateWorkflow: async (status) => {
+    const state = useStore.getState()
+    if (!state.currentUser || !state.fixtureData) return
+    try {
+      const res = await axios.post(`http://localhost:8000/api/planogram/${state.fixtureData.id}/workflow`, {
+        status,
+        user_id: state.currentUser.id
+      })
+      set({ workflow: res.data })
+    } catch (e) {
+      console.error(e)
+    }
+  },
+  addComment: async (positionId, text) => {
+    const state = useStore.getState()
+    if (!state.currentUser || !text) return
+    try {
+      await axios.post('http://localhost:8000/api/comments', {
+        user_id: state.currentUser.id,
+        position_id: positionId,
+        text
+      })
+      await state.fetchFixtureData(state.fixtureData.id)
+    } catch (e) {
+      console.error(e)
+    }
+  },
   theme: 'dark',
   toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' }))
 }))
