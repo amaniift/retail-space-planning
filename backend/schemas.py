@@ -92,3 +92,7 @@ class FixtureCreateRequest(BaseModel):
     depth: float
     base_height: float = 200.0
     number_of_shelves: int = 4
+
+
+class RecommendationRequest(BaseModel):
+    product_ids: Optional[List[int]] = None

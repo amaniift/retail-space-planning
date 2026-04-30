@@ -6,6 +6,7 @@ from typing import List
 import models
 import schemas
 from database import SessionLocal, engine
+from optimizer import optimize_shelf_layout
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -234,3 +235,26 @@ def update_position(position_id: int, request: schemas.PositionUpdateRequest, db
         "capacity": capacity,
         "dos": dos
     }
+
+
+
+@app.post("/api/planogram/{fixture_id}/recommendations")
+def get_recommendations(fixture_id: int, request: schemas.RecommendationRequest, db: Session = Depends(get_db)):
+    # Return a preview of recommended positions without modifying DB
+    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    if not fixture:
+        raise HTTPException(status_code=404, detail="Fixture not found")
+
+    recs = optimize_shelf_layout(fixture_id, db, product_ids=request.product_ids if request else None, apply=False)
+    return {"fixture_id": fixture_id, "recommendations": recs}
+
+
+@app.post("/api/planogram/{fixture_id}/apply_recommendations")
+def apply_recommendations(fixture_id: int, request: schemas.RecommendationRequest, db: Session = Depends(get_db)):
+    # Apply recommendations to DB (destructive: clears current positions in fixture)
+    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    if not fixture:
+        raise HTTPException(status_code=404, detail="Fixture not found")
+
+    optimize_shelf_layout(fixture_id, db, product_ids=request.product_ids if request else None, apply=True)
+    return {"message": "Recommendations applied", "fixture_id": fixture_id}

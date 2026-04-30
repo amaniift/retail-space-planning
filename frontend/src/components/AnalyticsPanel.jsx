@@ -24,6 +24,9 @@ export default function AnalyticsPanel() {
     fetchAnalytics()
   }, [fixtureData])
 
+  const [recommendations, setRecommendations] = React.useState(null)
+  const [loadingRecs, setLoadingRecs] = React.useState(false)
+
   if (!selectedProduct) {
     return (
       <div className="analytics-panel">
@@ -45,6 +48,51 @@ export default function AnalyticsPanel() {
                   <div className="stat-row"><span className="stat-label">Avg DOS:</span><span className="stat-value">{s.avg_dos ? s.avg_dos.toFixed(2) : '—'}</span></div>
                 </div>
               ))}
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <button
+                className="primary-btn"
+                onClick={async () => {
+                  if (!fixtureData) return
+                  try {
+                    setLoadingRecs(true)
+                    const res = await axios.post(`http://localhost:8000/api/planogram/${fixtureData.id}/recommendations`, {})
+                    setRecommendations(res.data.recommendations || [])
+                  } catch (err) {
+                    console.error(err)
+                  } finally {
+                    setLoadingRecs(false)
+                  }
+                }}
+              >
+                {loadingRecs ? 'Generating…' : 'Get Recommendations'}
+              </button>
+
+              <button
+                className="secondary-btn"
+                style={{ marginLeft: 8 }}
+                disabled={!recommendations || recommendations.length === 0}
+                onClick={async () => {
+                  if (!fixtureData || !recommendations) return
+                  try {
+                    // save undo snapshot
+                    useStore.getState().pushUndoSnapshot()
+                    await axios.post(`http://localhost:8000/api/planogram/${fixtureData.id}/apply_recommendations`, {})
+                    setRecommendations(null)
+                    fetchFixtureData()
+                  } catch (err) {
+                    console.error(err)
+                  }
+                }}
+              >
+                Apply Recommendations
+              </button>
+
+              {recommendations && (
+                <div style={{ marginTop: 8, color: '#aaa', fontSize: '0.9rem' }}>
+                  Suggested placements: {recommendations.length}
+                </div>
+              )}
             </div>
           </div>
         ) : (
