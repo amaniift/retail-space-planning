@@ -3,7 +3,6 @@ import ProductMesh from './ProductMesh'
 import { useStore } from '../store'
 import { RoundedBox } from '@react-three/drei'
 import axios from 'axios'
-import axios from 'axios'
 
 export default function Fixture({ data }) {
   const pendingPlacementProduct = useStore((state) => state.pendingPlacementProduct)
