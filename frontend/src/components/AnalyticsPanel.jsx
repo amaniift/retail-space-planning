@@ -141,6 +141,7 @@ export default function AnalyticsPanel() {
               </div>
             )}
           </div>
+          </div>
         ) : (
           <p>Loading fixture analytics…</p>
         )}
