@@ -2,8 +2,7 @@ import React from 'react'
 import ProductMesh from './ProductMesh'
 import { useStore } from '../store'
 import { RoundedBox } from '@react-three/drei'
-import * as THREE from 'three'
-import { useStore } from '../store'
+import axios from 'axios'
 import axios from 'axios'
 
 export default function Fixture({ data }) {
