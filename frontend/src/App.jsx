@@ -27,9 +27,7 @@ function App() {
 
   return (
     <div style={{ cursor: pendingPlacementProduct ? 'crosshair' : 'default', width: '100vw', height: '100vh' }}>
-      <button onClick={toggleTheme} style={{ position: 'absolute', top: 20, right: 340, zIndex: 50 }}>
-        Toggle Theme
-      </button>
+      
       <WorkflowPanel />
       <FixtureSelector />
       <ProductLibrary />
