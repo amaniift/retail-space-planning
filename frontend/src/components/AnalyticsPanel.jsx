@@ -247,7 +247,7 @@ export default function AnalyticsPanel() {
             useStore.getState().pushUndoSnapshot()
             await axios.delete(`http://localhost:8000/api/planogram/position/${position.id}`)
             setSelectedProduct(null)
-            fetchFixtureData()
+            await fetchFixtureData(fixtureData.id)
           } catch (err) {
             console.error(err)
           }

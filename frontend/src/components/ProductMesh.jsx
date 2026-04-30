@@ -96,7 +96,7 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
       setSelectedProduct(product, response.data, response.data.dos)
 
       if (nearestShelfId !== positionData.shelf_id) {
-        useStore.getState().fetchFixtureData()
+        await useStore.getState().fetchFixtureData(fixtureData.id)
       }
     } catch (err) {
       console.error(err)
