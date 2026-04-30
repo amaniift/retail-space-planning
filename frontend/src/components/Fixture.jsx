@@ -10,12 +10,17 @@ export default function Fixture({ data }) {
   const fetchFixtureData = useStore((state) => state.fetchFixtureData)
   const previewRecommendations = useStore((state) => state.previewRecommendations)
   const products = useStore((state) => state.products)
+  const currentUser = useStore((state) => state.currentUser)
 
   const xOffset = -data.width / 2
 
   const handleShelfClick = async (e, shelf) => {
     e.stopPropagation()
     if (!pendingPlacementProduct) return
+    if (currentUser?.role === 'viewer') {
+      alert("Viewers cannot modify the planogram.")
+      return
+    }
 
     const clickX = e.point.x - xOffset
 

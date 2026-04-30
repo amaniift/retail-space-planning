@@ -8,6 +8,8 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
   const meshRef = useRef()
   const previousMatrix = useRef(new THREE.Matrix4())
   const setSelectedProduct = useStore((state) => state.setSelectedProduct)
+  const currentUser = useStore((state) => state.currentUser)
+  const isViewer = currentUser?.role === 'viewer'
 
   const product = positionData.product
 
@@ -101,7 +103,23 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
     }
   }
 
-  return (
+  return isViewer ? (
+    <mesh
+      ref={meshRef}
+      position={[positionData.pos_x, calcY, 0]}
+      onClick={handleClick}
+    >
+      <RoundedBox args={[w, h, d]} radius={Math.min(w, h, d) * 0.08} smoothness={4}>
+        <meshPhysicalMaterial
+          color={product.color_hex}
+          roughness={0.42}
+          metalness={0.08}
+          clearcoat={0.18}
+          clearcoatRoughness={0.55}
+        />
+      </RoundedBox>
+    </mesh>
+  ) : (
     <PivotControls
       activeAxes={[true, true, false]}
       onDragStart={onDragStart}
