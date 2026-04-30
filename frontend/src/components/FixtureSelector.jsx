@@ -25,6 +25,8 @@ export default function FixtureSelector() {
     number_of_shelves: '4'
   })
 
+  const [isMinimized, setIsMinimized] = useState(false)
+
   const selectedStore = useMemo(
     () => stores.find((store) => store.id === selectedStoreId) ?? null,
     [stores, selectedStoreId]
@@ -103,11 +105,19 @@ export default function FixtureSelector() {
 
   return (
     <div className="fixture-selector">
-      <h2>Store & Fixture</h2>
-      <label>
-        Store
-        <select
-          value={selectedStoreId ?? ''}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMinimized ? 0 : 12 }}>
+        <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Store & Fixture</h2>
+        <button onClick={() => setIsMinimized(!isMinimized)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'flex', alignItems: 'center' }}>
+          {isMinimized ? '+' : '−'}
+        </button>
+      </div>
+
+      {!isMinimized && (
+        <>
+          <label>
+            Store
+            <select
+              value={selectedStoreId ?? ''}
           onChange={(e) => {
             const storeId = Number(e.target.value)
             setSelectedStoreId(storeId)
@@ -234,6 +244,8 @@ export default function FixtureSelector() {
             Create and Open Fixture
           </button>
         </form>
+      )}
+      </>
       )}
     </div>
   )
