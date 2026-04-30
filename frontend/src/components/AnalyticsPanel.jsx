@@ -26,6 +26,16 @@ export default function AnalyticsPanel() {
 
   const [recommendations, setRecommendations] = React.useState(null)
   const [loadingRecs, setLoadingRecs] = React.useState(false)
+  const [commentText, setCommentText] = React.useState('')
+
+  const freshPosition = React.useMemo(() => {
+    if (!fixtureData || !selectedProduct?.position) return selectedProduct?.position
+    for (const shelf of fixtureData.shelves) {
+      const found = shelf.positions.find(p => p.id === selectedProduct.position.id)
+      if (found) return found
+    }
+    return selectedProduct.position
+  }, [fixtureData, selectedProduct])
 
   if (!selectedProduct) {
     return (
@@ -135,16 +145,6 @@ export default function AnalyticsPanel() {
   const isDosWarning = dos < 7.0
 
   const capacity = position.facings_wide * position.facings_high * position.facings_deep
-
-  const [commentText, setCommentText] = React.useState('')
-  const freshPosition = React.useMemo(() => {
-    if (!fixtureData || !position) return position
-    for (const shelf of fixtureData.shelves) {
-      const found = shelf.positions.find(p => p.id === position.id)
-      if (found) return found
-    }
-    return position
-  }, [fixtureData, position])
 
   return (
     <div className="analytics-panel">
