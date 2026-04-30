@@ -8,6 +8,7 @@ export default function AnalyticsPanel() {
   const clearSelectedProduct = useStore((state) => state.clearSelectedProduct)
   const fetchFixtureData = useStore((state) => state.fetchFixtureData)
   const fixtureData = useStore((state) => state.fixtureData)
+  const placementWarnings = useStore((state) => state.placementWarnings)
 
   const [fixtureAnalytics, setFixtureAnalytics] = React.useState(null)
 
@@ -49,6 +50,13 @@ export default function AnalyticsPanel() {
         </div>
         {!isMinimized && (
         <>
+        {placementWarnings.length > 0 && (
+          <div style={{ marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.45)', color: '#fbbf24', fontSize: '0.85rem' }}>
+            {placementWarnings.map((warning, index) => (
+              <div key={`${warning}-${index}`}>{warning}</div>
+            ))}
+          </div>
+        )}
         {fixtureAnalytics ? (
           <div>
             <div className="stat-row">
@@ -158,6 +166,13 @@ export default function AnalyticsPanel() {
 
   return (
     <div className="analytics-panel">
+      {placementWarnings.length > 0 && (
+        <div style={{ marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.45)', color: '#fbbf24', fontSize: '0.85rem' }}>
+          {placementWarnings.map((warning, index) => (
+            <div key={`${warning}-${index}`}>{warning}</div>
+          ))}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isMinimized ? 0 : 16 }}>
         <h2 style={{ margin: 0 }}>Analytics</h2>
         <button onClick={() => setIsMinimized(!isMinimized)} style={{ background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1.2rem', padding: '0 4px', display: 'flex', alignItems: 'center' }}>

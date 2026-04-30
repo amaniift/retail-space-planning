@@ -6,6 +6,7 @@ from models import Fixture, Shelf, Product, PerformanceData
 from optimizer import optimize_shelf_layout
 
 fake = Faker()
+PRODUCT_CATEGORIES = ["Grocery", "Beverage", "Health", "Household"]
 
 
 def create_fixture(db, store, name, fixture_type, width, height, depth, base_height, shelf_count, product_count):
@@ -39,6 +40,7 @@ def create_fixture(db, store, name, fixture_type, width, height, depth, base_hei
             sku=fake.unique.ean(length=13),
             name=fake.catch_phrase(),
             brand=fake.company(),
+            category=random.choice(PRODUCT_CATEGORIES),
             width=random.uniform(50.0, 200.0),
             height=random.uniform(50.0, 300.0),
             depth=random.uniform(50.0, 400.0),

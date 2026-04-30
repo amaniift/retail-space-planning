@@ -1,6 +1,30 @@
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
+import datetime
 
+class UserSchema(BaseModel):
+    id: int
+    username: str
+    role: str
+    model_config = ConfigDict(from_attributes=True)
+
+class CommentSchema(BaseModel):
+    id: int
+    position_id: int
+    user_id: int
+    text: str
+    created_at: datetime.datetime
+    user: Optional[UserSchema] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class WorkflowStateSchema(BaseModel):
+    id: int
+    fixture_id: int
+    status: str
+    updated_by: Optional[int] = None
+    updated_at: datetime.datetime
+    user: Optional[UserSchema] = None
+    model_config = ConfigDict(from_attributes=True)
 
 class PerformanceDataSchema(BaseModel):
     id: int
@@ -15,6 +39,7 @@ class ProductSchema(BaseModel):
     sku: str
     name: str
     brand: str
+    category: Optional[str] = None
     width: float
     height: float
     depth: float
@@ -34,6 +59,7 @@ class PositionSchema(BaseModel):
     facings_high: int = 1
     facings_deep: int = 1
     product: ProductSchema
+    comments: List[CommentSchema] = []
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -58,6 +84,7 @@ class FixtureSchema(BaseModel):
     base_height: float
     number_of_shelves: int
     shelves: List[ShelfSchema] = []
+    workflow: Optional[WorkflowStateSchema] = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -96,3 +123,12 @@ class FixtureCreateRequest(BaseModel):
 
 class RecommendationRequest(BaseModel):
     product_ids: Optional[List[int]] = None
+
+class CommentCreateRequest(BaseModel):
+    user_id: int
+    position_id: int
+    text: str
+
+class WorkflowUpdateRequest(BaseModel):
+    status: str
+    user_id: int

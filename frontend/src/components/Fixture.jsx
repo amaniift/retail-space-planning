@@ -11,6 +11,7 @@ export default function Fixture({ data }) {
   const previewRecommendations = useStore((state) => state.previewRecommendations)
   const products = useStore((state) => state.products)
   const currentUser = useStore((state) => state.currentUser)
+  const setPlacementWarnings = useStore((state) => state.setPlacementWarnings)
 
   const xOffset = -data.width / 2
 
@@ -27,15 +28,18 @@ export default function Fixture({ data }) {
     try {
       // save snapshot for undo
       useStore.getState().pushUndoSnapshot()
-      await axios.post('http://localhost:8000/api/planogram/position/add', {
+      const response = await axios.post('http://localhost:8000/api/planogram/position/add', {
         product_id: pendingPlacementProduct.id,
         shelf_id: shelf.id,
         pos_x: clickX,
         pos_y: shelf.vertical_position_y
       })
+      setPlacementWarnings(response.data?.warnings || [])
       setPendingPlacementProduct(null)
-      fetchFixtureData()
+      fetchFixtureData(data.id)
     } catch (err) {
+      const message = err?.response?.data?.detail || 'Unable to place product.'
+      setPlacementWarnings([message])
       console.error(err)
     }
   }

@@ -135,6 +135,9 @@ export const useStore = create((set) => ({
   clearPreviewRecommendations: () => set({ previewRecommendations: [] }),
   pendingPlacementProduct: null,
   setPendingPlacementProduct: (product) => set({ pendingPlacementProduct: product }),
+  placementWarnings: [],
+  setPlacementWarnings: (warnings) => set({ placementWarnings: warnings || [] }),
+  clearPlacementWarnings: () => set({ placementWarnings: [] }),
   
   users: [],
   currentUser: null,

@@ -8,6 +8,7 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
   const meshRef = useRef()
   const previousMatrix = useRef(new THREE.Matrix4())
   const setSelectedProduct = useStore((state) => state.setSelectedProduct)
+  const setPlacementWarnings = useStore((state) => state.setPlacementWarnings)
   const currentUser = useStore((state) => state.currentUser)
   const isViewer = currentUser?.role === 'viewer'
 
@@ -93,13 +94,22 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
         facings_wide: positionData.facings_wide,
         shelf_id: nearestShelfId
       })
+      setPlacementWarnings(response.data?.warnings || [])
       setSelectedProduct(product, response.data, response.data.dos)
 
       if (nearestShelfId !== positionData.shelf_id) {
         await useStore.getState().fetchFixtureData(fixtureData.id)
       }
     } catch (err) {
+      const message = err?.response?.data?.detail || 'Unable to move product.'
+      setPlacementWarnings([message])
+      if (meshRef.current) {
+        meshRef.current.matrix.copy(previousMatrix.current)
+        meshRef.current.matrix.decompose(meshRef.current.position, meshRef.current.quaternion, meshRef.current.scale)
+        meshRef.current.updateMatrixWorld()
+      }
       console.error(err)
+      await useStore.getState().fetchFixtureData(fixtureData.id)
     }
   }
 

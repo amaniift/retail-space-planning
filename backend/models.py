@@ -1,6 +1,41 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
+import datetime
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    role = Column(String, default="viewer") # admin, editor, viewer
+
+    comments = relationship("Comment", back_populates="user")
+    workflows = relationship("WorkflowState", back_populates="user")
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True, index=True)
+    position_id = Column(Integer, ForeignKey("positions.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    text = Column(String)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    position = relationship("Position", back_populates="comments")
+    user = relationship("User", back_populates="comments")
+
+
+class WorkflowState(Base):
+    __tablename__ = "workflow_states"
+    id = Column(Integer, primary_key=True, index=True)
+    fixture_id = Column(Integer, ForeignKey("fixtures.id"), unique=True)
+    status = Column(String, default="Draft") # Draft, Review, Approved, Published
+    updated_by = Column(Integer, ForeignKey("users.id"))
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    fixture = relationship("Fixture", back_populates="workflow")
+    user = relationship("User", back_populates="workflows")
+
 
 class Fixture(Base):
     __tablename__ = "fixtures"
@@ -16,6 +51,7 @@ class Fixture(Base):
 
     shelves = relationship("Shelf", back_populates="fixture")
     store = relationship("Store", back_populates="fixtures")
+    workflow = relationship("WorkflowState", back_populates="fixture", uselist=False)
 
 
 class Shelf(Base):
@@ -36,6 +72,7 @@ class Product(Base):
     sku = Column(String, unique=True, index=True)
     name = Column(String)
     brand = Column(String)
+    category = Column(String, default="General")
     width = Column(Float)
     height = Column(Float)
     depth = Column(Float)
@@ -78,3 +115,4 @@ class Position(Base):
 
     shelf = relationship("Shelf", back_populates="positions")
     product = relationship("Product", back_populates="positions")
+    comments = relationship("Comment", back_populates="position")
