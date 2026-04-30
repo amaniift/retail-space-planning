@@ -48,7 +48,8 @@ export default function Scene() {
         { name: 'right', keys: ['ArrowRight', 'd', 'D'] },
       ]}
     >
-      <Canvas>
+      <Canvas shadowMap>
+        <color attach="background" args={['#1a1a1a']} />
         <OrthographicCamera makeDefault position={[0, 1000, 3000]} zoom={0.5} near={-5000} far={10000} />
         <CameraControls />
         <ambientLight intensity={0.6} />

@@ -37,12 +37,12 @@ export default function Fixture({ data }) {
       {/* Floor / Ground Plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[data.width / 2, 0, 0]}>
         <planeGeometry args={[data.width * 2, data.depth * 10]} />
-        <meshStandardMaterial color="#222" />
+        <meshStandardMaterial color="#111" />
       </mesh>
 
       <mesh position={[data.width / 2, data.height / 2, -data.depth / 2]}>
         <boxGeometry args={[data.width, data.height, 10]} />
-        <meshStandardMaterial color="#444" />
+        <meshStandardMaterial color="#888" />
       </mesh>
 
       {data.shelves.map((shelf) => (
@@ -54,7 +54,7 @@ export default function Fixture({ data }) {
             onPointerOut={(e) => { if (pendingPlacementProduct) document.body.style.cursor = 'default' }}
           >
             <boxGeometry args={[shelf.width, 20, shelf.depth]} />
-            <meshStandardMaterial color="#666" />
+            <meshStandardMaterial color="#aaa" />
           </mesh>
 
           {shelf.positions.map((pos) => (

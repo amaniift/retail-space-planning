@@ -70,9 +70,17 @@ body.light .product-library {
   margin-top: 6px;
   padding: 8px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.35);
-  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  font-size: 0.9rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.fixture-selector select option {
+  background: #2a2a2a;
+  color: #ffffff;
 }
 
 .fixture-selector-hint {
