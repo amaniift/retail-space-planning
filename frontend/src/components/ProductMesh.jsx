@@ -1,5 +1,5 @@
-import React, { useRef } from 'react'
-import { PivotControls, RoundedBox } from '@react-three/drei'
+import React, { useRef, useMemo } from 'react'
+import { PivotControls, RoundedBox, Edges } from '@react-three/drei'
 import { useStore } from '../store'
 import axios from 'axios'
 import * as THREE from 'three'
@@ -28,6 +28,31 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
   }
 
   const calcY = shelfY + (h / 2)
+
+  // Pre-calculate individual unit positions for performance
+  const unitPositions = useMemo(() => {
+    const positions = [];
+    const fw = positionData.facings_wide;
+    const fh = positionData.facings_high;
+    const fd = positionData.facings_deep;
+    
+    const pw = product.width;
+    const ph = product.height;
+    const pd = product.depth;
+
+    for (let x = 0; x < fw; x++) {
+      for (let y = 0; y < fh; y++) {
+        for (let z = 0; z < fd; z++) {
+          positions.push([
+            (x - (fw - 1) / 2) * pw,
+            (y - (fh - 1) / 2) * ph,
+            (z - (fd - 1) / 2) * pd
+          ]);
+        }
+      }
+    }
+    return positions;
+  }, [positionData, product]);
 
   const onDragStart = () => {
     if (meshRef.current) {
@@ -114,21 +139,32 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
   }
 
   return isViewer ? (
-    <mesh
+    <group
       ref={meshRef}
       position={[positionData.pos_x, calcY, 0]}
       onClick={handleClick}
     >
-      <RoundedBox args={[w, h, d]} radius={Math.min(w, h, d) * 0.08} smoothness={4}>
-        <meshPhysicalMaterial
-          color={product.color_hex}
-          roughness={0.42}
-          metalness={0.08}
-          clearcoat={0.18}
-          clearcoatRoughness={0.55}
-        />
-      </RoundedBox>
-    </mesh>
+      {/* Outline for the total volume */}
+      <mesh>
+        <boxGeometry args={[w, h, d]} />
+        <meshBasicMaterial transparent opacity={0} />
+        <Edges scale={1} threshold={15} color="rgba(255, 255, 255, 0.4)" />
+      </mesh>
+
+      {/* Individual units */}
+      {unitPositions.map((pos, idx) => (
+        <mesh key={idx} position={pos}>
+          <boxGeometry args={[product.width * 0.96, product.height * 0.96, product.depth * 0.96]} />
+          <meshPhysicalMaterial
+            color={product.color_hex}
+            roughness={0.42}
+            metalness={0.08}
+            clearcoat={0.18}
+            clearcoatRoughness={0.55}
+          />
+        </mesh>
+      ))}
+    </group>
   ) : (
     <PivotControls
       activeAxes={[true, true, false]}
@@ -138,21 +174,32 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
       scale={100}
       depthTest={false}
     >
-      <mesh
+      <group
         ref={meshRef}
         position={[positionData.pos_x, calcY, 0]}
         onClick={handleClick}
       >
-        <RoundedBox args={[w, h, d]} radius={Math.min(w, h, d) * 0.08} smoothness={4}>
-          <meshPhysicalMaterial
-            color={product.color_hex}
-            roughness={0.42}
-            metalness={0.08}
-            clearcoat={0.18}
-            clearcoatRoughness={0.55}
-          />
-        </RoundedBox>
-      </mesh>
+        {/* Outline for the total volume */}
+        <mesh>
+          <boxGeometry args={[w, h, d]} />
+          <meshBasicMaterial transparent opacity={0} />
+          <Edges scale={1} threshold={15} color="rgba(255, 255, 255, 0.6)" />
+        </mesh>
+
+        {/* Individual units */}
+        {unitPositions.map((pos, idx) => (
+          <mesh key={idx} position={pos}>
+            <boxGeometry args={[product.width * 0.96, product.height * 0.96, product.depth * 0.96]} />
+            <meshPhysicalMaterial
+              color={product.color_hex}
+              roughness={0.42}
+              metalness={0.08}
+              clearcoat={0.18}
+              clearcoatRoughness={0.55}
+            />
+          </mesh>
+        ))}
+      </group>
     </PivotControls>
   )
 }
