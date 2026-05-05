@@ -1,8 +1,36 @@
-import React, { useRef, useMemo } from 'react'
-import { PivotControls, RoundedBox, Edges } from '@react-three/drei'
+import React, { useRef, useMemo, Suspense } from 'react'
+import { PivotControls, RoundedBox, Edges, useTexture } from '@react-three/drei'
 import { useStore } from '../store'
 import axios from 'axios'
 import * as THREE from 'three'
+
+function Unit({ product, pos }) {
+  const texture = product.image_url ? useTexture(product.image_url) : null
+
+  return (
+    <mesh position={pos}>
+      <boxGeometry args={[product.width * 0.98, product.height * 0.98, product.depth * 0.98]} />
+      {texture ? (
+        <>
+          <meshPhysicalMaterial attach="material-0" color={product.color_hex} roughness={0.5} />
+          <meshPhysicalMaterial attach="material-1" color={product.color_hex} roughness={0.5} />
+          <meshPhysicalMaterial attach="material-2" color={product.color_hex} roughness={0.5} />
+          <meshPhysicalMaterial attach="material-3" color={product.color_hex} roughness={0.5} />
+          <meshPhysicalMaterial attach="material-4" map={texture} roughness={0.3} metalness={0.1} />
+          <meshPhysicalMaterial attach="material-5" color={product.color_hex} roughness={0.5} />
+        </>
+      ) : (
+        <meshPhysicalMaterial
+          color={product.color_hex}
+          roughness={0.42}
+          metalness={0.08}
+          clearcoat={0.18}
+          clearcoatRoughness={0.55}
+        />
+      )}
+    </mesh>
+  )
+}
 
 export default function ProductMesh({ positionData, shelfY, allPositions }) {
   const meshRef = useRef()
@@ -152,18 +180,11 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
       </mesh>
 
       {/* Individual units */}
-      {unitPositions.map((pos, idx) => (
-        <mesh key={idx} position={pos}>
-          <boxGeometry args={[product.width * 0.96, product.height * 0.96, product.depth * 0.96]} />
-          <meshPhysicalMaterial
-            color={product.color_hex}
-            roughness={0.42}
-            metalness={0.08}
-            clearcoat={0.18}
-            clearcoatRoughness={0.55}
-          />
-        </mesh>
-      ))}
+        {unitPositions.map((pos, idx) => (
+          <Suspense key={idx} fallback={<mesh position={pos}><boxGeometry args={[product.width * 0.96, product.height * 0.96, product.depth * 0.96]} /><meshBasicMaterial color={product.color_hex} /></mesh>}>
+            <Unit product={product} pos={pos} />
+          </Suspense>
+        ))}
     </group>
   ) : (
     <PivotControls
@@ -188,16 +209,9 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
 
         {/* Individual units */}
         {unitPositions.map((pos, idx) => (
-          <mesh key={idx} position={pos}>
-            <boxGeometry args={[product.width * 0.96, product.height * 0.96, product.depth * 0.96]} />
-            <meshPhysicalMaterial
-              color={product.color_hex}
-              roughness={0.42}
-              metalness={0.08}
-              clearcoat={0.18}
-              clearcoatRoughness={0.55}
-            />
-          </mesh>
+          <Suspense key={idx} fallback={<mesh position={pos}><boxGeometry args={[product.width * 0.96, product.height * 0.96, product.depth * 0.96]} /><meshBasicMaterial color={product.color_hex} /></mesh>}>
+            <Unit product={product} pos={pos} />
+          </Suspense>
         ))}
       </group>
     </PivotControls>

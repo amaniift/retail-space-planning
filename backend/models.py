@@ -77,6 +77,7 @@ class Product(Base):
     height = Column(Float)
     depth = Column(Float)
     color_hex = Column(String)
+    image_url = Column(String, nullable=True)
 
     performance = relationship("PerformanceData", back_populates="product", uselist=False)
     positions = relationship("Position", back_populates="product")

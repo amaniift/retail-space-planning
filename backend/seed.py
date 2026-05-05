@@ -36,15 +36,23 @@ def create_fixture(db, store, name, fixture_type, width, height, depth, base_hei
 
     created_product_ids = []
     for _ in range(product_count):
+        cat = random.choice(PRODUCT_CATEGORIES)
+        image_map = {
+            "Grocery": "/products/grocery.png",
+            "Beverage": "/products/beverage.png",
+            "Health": "/products/health.png",
+            "Household": "/products/household.png"
+        }
         product = Product(
             sku=fake.unique.ean(length=13),
             name=fake.catch_phrase(),
             brand=fake.company(),
-            category=random.choice(PRODUCT_CATEGORIES),
+            category=cat,
             width=random.uniform(50.0, 200.0),
             height=random.uniform(50.0, 300.0),
             depth=random.uniform(50.0, 400.0),
             color_hex=fake.hex_color(),
+            image_url=image_map.get(cat, "/products/grocery.png")
         )
         db.add(product)
         db.commit()

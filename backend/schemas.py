@@ -44,6 +44,7 @@ class ProductSchema(BaseModel):
     height: float
     depth: float
     color_hex: str
+    image_url: Optional[str] = None
     performance: Optional[PerformanceDataSchema] = None
     model_config = ConfigDict(from_attributes=True)
 
