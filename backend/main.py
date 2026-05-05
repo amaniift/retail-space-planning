@@ -5,10 +5,9 @@ from sqlalchemy.orm import Session
 from collections import Counter
 from typing import List, Optional
 import math
-import models
-import schemas
-from database import SessionLocal, engine
-from optimizer import optimize_shelf_layout
+from . import models, schemas
+from .database import SessionLocal, engine
+from .optimizer import optimize_shelf_layout
 import datetime
 
 MIN_DOS = 7.0
@@ -30,19 +29,22 @@ def ensure_schema():
             connection.execute(
                 text("ALTER TABLE fixtures ADD COLUMN store_id INTEGER"))
 
-    product_column_names = {column["name"] for column in inspector.get_columns("products")}
+    product_column_names = {column["name"]
+                            for column in inspector.get_columns("products")}
     if "category" not in product_column_names:
         with engine.begin() as connection:
-            connection.execute(text("ALTER TABLE products ADD COLUMN category TEXT"))
+            connection.execute(
+                text("ALTER TABLE products ADD COLUMN category TEXT"))
     with engine.begin() as connection:
         connection.execute(
-            text("UPDATE products SET category = COALESCE(category, 'General') WHERE category IS NULL")
+            text(
+                "UPDATE products SET category = COALESCE(category, 'General') WHERE category IS NULL")
         )
-                
+
     # Create missing tables if needed
     if "users" not in tables or "comments" not in tables or "workflow_states" not in tables:
         models.Base.metadata.create_all(bind=engine)
-        
+
     # Seed a default admin user if no users exist
     with SessionLocal() as db:
         if db.query(models.User).count() == 0:
@@ -100,21 +102,25 @@ def resolve_facings_wide(
     warnings = []
     max_fit = int(shelf.width // product.width)
     if max_fit < 1:
-        raise HTTPException(status_code=400, detail="Product cannot fit on this shelf.")
+        raise HTTPException(
+            status_code=400, detail="Product cannot fit on this shelf.")
 
     perf = product.performance
     daily_mov = perf.daily_unit_movement if perf and perf.daily_unit_movement and perf.daily_unit_movement > 0 else 0.0
     min_for_dos = 1
     if daily_mov > 0:
-        min_for_dos = max(1, math.ceil((MIN_DOS * daily_mov) / max(1, facings_high * facings_deep)))
+        min_for_dos = max(1, math.ceil(
+            (MIN_DOS * daily_mov) / max(1, facings_high * facings_deep)))
 
     snapped = max(requested_facings_wide, min_for_dos)
     snapped = min(snapped, max_fit)
 
     if snapped != requested_facings_wide:
-        warnings.append(f"Facings snapped to {snapped} to stay within shelf limits and DOS rules.")
+        warnings.append(
+            f"Facings snapped to {snapped} to stay within shelf limits and DOS rules.")
     if snapped < min_for_dos:
-        warnings.append(f"DOS warning: this shelf can only support {snapped} facings, below the minimum DOS target.")
+        warnings.append(
+            f"DOS warning: this shelf can only support {snapped} facings, below the minimum DOS target.")
 
     return snapped, warnings, daily_mov
 
@@ -141,7 +147,8 @@ def validate_position_request(
     product_width = product.width * facings_wide
     half_width = product_width / 2.0
     if product_width > shelf.width:
-        raise HTTPException(status_code=400, detail="Product is wider than the shelf and cannot be placed safely.")
+        raise HTTPException(
+            status_code=400, detail="Product is wider than the shelf and cannot be placed safely.")
 
     snapped_x = snap_to_grid(pos_x)
     min_x = half_width
@@ -149,7 +156,8 @@ def validate_position_request(
     clamped_x = min(max(snapped_x, min_x), max_x)
 
     if clamped_x != pos_x:
-        warnings.append(f"Placement snapped to a valid shelf position at {clamped_x:.1f} mm.")
+        warnings.append(
+            f"Placement snapped to a valid shelf position at {clamped_x:.1f} mm.")
 
     desired_min = clamped_x - half_width
     desired_max = clamped_x + half_width
@@ -161,12 +169,14 @@ def validate_position_request(
         other_min = other.pos_x - (other_width / 2.0)
         other_max = other.pos_x + (other_width / 2.0)
         if interval_overlaps(desired_min, desired_max, other_min, other_max):
-            raise HTTPException(status_code=400, detail="Placement overlaps another product on the shelf.")
+            raise HTTPException(
+                status_code=400, detail="Placement overlaps another product on the shelf.")
 
     capacity = facings_wide * facings_high * facings_deep
     dos = capacity / daily_mov if daily_mov > 0 else None
     if dos is not None and dos < MIN_DOS:
-        warnings.append(f"DOS warning: {dos:.2f} days is below the minimum {MIN_DOS:.1f} days.")
+        warnings.append(
+            f"DOS warning: {dos:.2f} days is below the minimum {MIN_DOS:.1f} days.")
 
     shelf_categories = []
     for other in shelf.positions:
@@ -361,7 +371,8 @@ def update_position(position_id: int, request: schemas.PositionUpdateRequest, db
         raise HTTPException(status_code=404, detail="Position not found")
 
     target_shelf_id = request.shelf_id if request.shelf_id is not None else pos.shelf_id
-    target_shelf = db.query(models.Shelf).filter(models.Shelf.id == target_shelf_id).first()
+    target_shelf = db.query(models.Shelf).filter(
+        models.Shelf.id == target_shelf_id).first()
     if not target_shelf:
         raise HTTPException(status_code=404, detail="Shelf not found")
 
@@ -397,39 +408,46 @@ def update_position(position_id: int, request: schemas.PositionUpdateRequest, db
     }
 
 
-
 @app.post("/api/planogram/{fixture_id}/recommendations")
 def get_recommendations(fixture_id: int, request: schemas.RecommendationRequest, db: Session = Depends(get_db)):
     # Return a preview of recommended positions without modifying DB
-    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    fixture = db.query(models.Fixture).filter(
+        models.Fixture.id == fixture_id).first()
     if not fixture:
         raise HTTPException(status_code=404, detail="Fixture not found")
 
-    recs = optimize_shelf_layout(fixture_id, db, product_ids=request.product_ids if request else None, apply=False)
+    recs = optimize_shelf_layout(
+        fixture_id, db, product_ids=request.product_ids if request else None, apply=False)
     return {"fixture_id": fixture_id, "recommendations": recs}
 
 
 @app.post("/api/planogram/{fixture_id}/apply_recommendations")
 def apply_recommendations(fixture_id: int, request: schemas.RecommendationRequest, db: Session = Depends(get_db)):
     # Apply recommendations to DB (destructive: clears current positions in fixture)
-    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    fixture = db.query(models.Fixture).filter(
+        models.Fixture.id == fixture_id).first()
     if not fixture:
         raise HTTPException(status_code=404, detail="Fixture not found")
 
-    optimize_shelf_layout(fixture_id, db, product_ids=request.product_ids if request else None, apply=True)
+    optimize_shelf_layout(
+        fixture_id, db, product_ids=request.product_ids if request else None, apply=True)
     return {"message": "Recommendations applied", "fixture_id": fixture_id}
+
 
 @app.get("/api/users", response_model=List[schemas.UserSchema])
 def get_users(db: Session = Depends(get_db)):
     return db.query(models.User).all()
 
+
 @app.get("/api/planogram/{fixture_id}/workflow", response_model=schemas.WorkflowStateSchema)
 def get_workflow(fixture_id: int, db: Session = Depends(get_db)):
-    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    fixture = db.query(models.Fixture).filter(
+        models.Fixture.id == fixture_id).first()
     if not fixture:
         raise HTTPException(status_code=404, detail="Fixture not found")
-    
-    workflow = db.query(models.WorkflowState).filter(models.WorkflowState.fixture_id == fixture_id).first()
+
+    workflow = db.query(models.WorkflowState).filter(
+        models.WorkflowState.fixture_id == fixture_id).first()
     if not workflow:
         # Return default if not explicitly created yet
         return schemas.WorkflowStateSchema(
@@ -437,23 +455,28 @@ def get_workflow(fixture_id: int, db: Session = Depends(get_db)):
         )
     return workflow
 
+
 @app.post("/api/planogram/{fixture_id}/workflow", response_model=schemas.WorkflowStateSchema)
 def update_workflow(fixture_id: int, request: schemas.WorkflowUpdateRequest, db: Session = Depends(get_db)):
-    fixture = db.query(models.Fixture).filter(models.Fixture.id == fixture_id).first()
+    fixture = db.query(models.Fixture).filter(
+        models.Fixture.id == fixture_id).first()
     if not fixture:
         raise HTTPException(status_code=404, detail="Fixture not found")
-        
-    workflow = db.query(models.WorkflowState).filter(models.WorkflowState.fixture_id == fixture_id).first()
+
+    workflow = db.query(models.WorkflowState).filter(
+        models.WorkflowState.fixture_id == fixture_id).first()
     if not workflow:
-        workflow = models.WorkflowState(fixture_id=fixture_id, status=request.status, updated_by=request.user_id)
+        workflow = models.WorkflowState(
+            fixture_id=fixture_id, status=request.status, updated_by=request.user_id)
         db.add(workflow)
     else:
         workflow.status = request.status
         workflow.updated_by = request.user_id
-        
+
     db.commit()
     db.refresh(workflow)
     return workflow
+
 
 @app.post("/api/comments", response_model=schemas.CommentSchema)
 def add_comment(request: schemas.CommentCreateRequest, db: Session = Depends(get_db)):

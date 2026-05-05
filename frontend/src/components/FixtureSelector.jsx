@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store'
+import TemplateSelector from './TemplateSelector'
 
 export default function FixtureSelector() {
   const stores = useStore((state) => state.stores)
@@ -13,6 +14,7 @@ export default function FixtureSelector() {
   const fetchFixtureData = useStore((state) => state.fetchFixtureData)
   const createFixture = useStore((state) => state.createFixture)
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false)
   const [createError, setCreateError] = useState('')
   const [createSuccess, setCreateSuccess] = useState('')
   const [form, setForm] = useState({
@@ -118,134 +120,154 @@ export default function FixtureSelector() {
             Store
             <select
               value={selectedStoreId ?? ''}
-          onChange={(e) => {
-            const storeId = Number(e.target.value)
-            setSelectedStoreId(storeId)
-            setSelectedFixtureId(null)
-            fetchFixturesForStore(storeId).then((storeFixtures) => {
-              if (storeFixtures.length) {
-                setSelectedFixtureId(storeFixtures[0].id)
-              }
-            })
-          }}
-        >
-          {stores.map((store) => (
-            <option key={store.id} value={store.id}>
-              {store.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label>
-        Fixture
-        <select
-          value={selectedFixtureId ?? ''}
-          onChange={(e) => setSelectedFixtureId(Number(e.target.value))}
-        >
-          {fixtures.map((fixture) => (
-            <option key={fixture.id} value={fixture.id}>
-              {fixture.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <p className="fixture-selector-hint">
-        Pick a store first, then choose a fixture to view and edit its planogram.
-      </p>
-
-      <button
-        type="button"
-        className="secondary-btn"
-        onClick={() => setShowCreateForm((value) => !value)}
-        style={{ width: '100%', marginTop: 10 }}
-      >
-        {showCreateForm ? 'Close Create Fixture' : 'Create Fixture'}
-      </button>
-
-      {showCreateForm && (
-        <form className="create-fixture-form" onSubmit={handleCreateFixture}>
-          <label>
-            Fixture name
-            <input
-              value={form.name}
-              onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))}
-              placeholder="Main Gondola A"
-            />
+              onChange={(e) => {
+                const storeId = Number(e.target.value)
+                setSelectedStoreId(storeId)
+                setSelectedFixtureId(null)
+                fetchFixturesForStore(storeId).then((storeFixtures) => {
+                  if (storeFixtures.length) {
+                    setSelectedFixtureId(storeFixtures[0].id)
+                  }
+                })
+              }}
+            >
+              {stores.map((store) => (
+                <option key={store.id} value={store.id}>
+                  {store.name}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label>
-            Type
-            <input
-              value={form.type}
-              onChange={(e) => setForm((current) => ({ ...current, type: e.target.value }))}
-              placeholder="Gondola"
-            />
+            Fixture
+            <select
+              value={selectedFixtureId ?? ''}
+              onChange={(e) => setSelectedFixtureId(Number(e.target.value))}
+            >
+              {fixtures.map((fixture) => (
+                <option key={fixture.id} value={fixture.id}>
+                  {fixture.name}
+                </option>
+              ))}
+            </select>
           </label>
 
-          <div className="fixture-grid">
-            <label>
-              Width
-              <input
-                type="number"
-                value={form.width}
-                onChange={(e) => setForm((current) => ({ ...current, width: e.target.value }))}
-                min="1"
-                step="0.1"
-              />
-            </label>
-            <label>
-              Height
-              <input
-                type="number"
-                value={form.height}
-                onChange={(e) => setForm((current) => ({ ...current, height: e.target.value }))}
-                min="1"
-                step="0.1"
-              />
-            </label>
-            <label>
-              Depth
-              <input
-                type="number"
-                value={form.depth}
-                onChange={(e) => setForm((current) => ({ ...current, depth: e.target.value }))}
-                min="1"
-                step="0.1"
-              />
-            </label>
-            <label>
-              Base height
-              <input
-                type="number"
-                value={form.base_height}
-                onChange={(e) => setForm((current) => ({ ...current, base_height: e.target.value }))}
-                min="0"
-                step="0.1"
-              />
-            </label>
-            <label>
-              Shelves
-              <input
-                type="number"
-                value={form.number_of_shelves}
-                onChange={(e) => setForm((current) => ({ ...current, number_of_shelves: e.target.value }))}
-                min="1"
-                step="1"
-              />
-            </label>
-          </div>
+          <p className="fixture-selector-hint">
+            Pick a store first, then choose a fixture to view and edit its planogram.
+          </p>
 
-          {createError && <div className="fixture-form-error">{createError}</div>}
-          {createSuccess && <div className="fixture-form-success">{createSuccess}</div>}
-
-          <button type="submit" className="primary-btn" style={{ width: '100%', marginTop: 8 }}>
-            Create and Open Fixture
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={() => {
+              setShowCreateForm((value) => !value)
+              setShowTemplateSelector(false)
+            }}
+            style={{ width: '100%', marginTop: 10 }}
+          >
+            {showCreateForm ? 'Close Create Fixture' : 'Create Fixture'}
           </button>
-        </form>
+
+          {showCreateForm && (
+            <div style={{ marginTop: 10 }}>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={() => setShowTemplateSelector(true)}
+                style={{ width: '100%', marginBottom: 10, background: '#3b82f6', color: 'white' }}
+              >
+                Create from template
+              </button>
+
+              <form className="create-fixture-form" onSubmit={handleCreateFixture}>
+                <label>
+                  Fixture name
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))}
+                    placeholder="Main Gondola A"
+                  />
+                </label>
+
+                <label>
+                  Type
+                  <input
+                    value={form.type}
+                    onChange={(e) => setForm((current) => ({ ...current, type: e.target.value }))}
+                    placeholder="Gondola"
+                  />
+                </label>
+
+                <div className="fixture-grid">
+                  <label>
+                    Width
+                    <input
+                      type="number"
+                      value={form.width}
+                      onChange={(e) => setForm((current) => ({ ...current, width: e.target.value }))}
+                      min="1"
+                      step="0.1"
+                    />
+                  </label>
+                  <label>
+                    Height
+                    <input
+                      type="number"
+                      value={form.height}
+                      onChange={(e) => setForm((current) => ({ ...current, height: e.target.value }))}
+                      min="1"
+                      step="0.1"
+                    />
+                  </label>
+                  <label>
+                    Depth
+                    <input
+                      type="number"
+                      value={form.depth}
+                      onChange={(e) => setForm((current) => ({ ...current, depth: e.target.value }))}
+                      min="1"
+                      step="0.1"
+                    />
+                  </label>
+                  <label>
+                    Base height
+                    <input
+                      type="number"
+                      value={form.base_height}
+                      onChange={(e) => setForm((current) => ({ ...current, base_height: e.target.value }))}
+                      min="0"
+                      step="0.1"
+                    />
+                  </label>
+                  <label>
+                    Shelves
+                    <input
+                      type="number"
+                      value={form.number_of_shelves}
+                      onChange={(e) => setForm((current) => ({ ...current, number_of_shelves: e.target.value }))}
+                      min="1"
+                      step="1"
+                    />
+                  </label>
+                </div>
+
+                {createError && <div className="fixture-form-error">{createError}</div>}
+                {createSuccess && <div className="fixture-form-success">{createSuccess}</div>}
+
+                <button type="submit" className="primary-btn" style={{ width: '100%', marginTop: 8 }}>
+                  Create and Open Fixture
+                </button>
+              </form>
+            </div>
+          )}
+        </>
       )}
-      </>
+      {showTemplateSelector && (
+        <TemplateSelector
+          onClose={() => setShowTemplateSelector(false)}
+          storeId={selectedStoreId}
+        />
       )}
     </div>
   )

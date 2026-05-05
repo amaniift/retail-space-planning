@@ -1,4 +1,4 @@
-from models import Fixture, Shelf, Product, Position, PerformanceData
+from .models import Fixture, Shelf, Product, Position, PerformanceData
 from sqlalchemy.orm import Session
 
 
@@ -16,14 +16,17 @@ def optimize_shelf_layout(fixture_id: int, db: Session, product_ids=None, apply:
     product_query = db.query(Product).join(PerformanceData)
     if product_ids:
         product_query = product_query.filter(Product.id.in_(product_ids))
-    products = product_query.order_by(PerformanceData.daily_unit_movement.desc()).all()
+    products = product_query.order_by(
+        PerformanceData.daily_unit_movement.desc()).all()
 
     # Get shelves for fixture, ordered bottom to top
-    shelves = db.query(Shelf).filter(Shelf.fixture_id == fixture_id).order_by(Shelf.vertical_position_y.asc()).all()
+    shelves = db.query(Shelf).filter(Shelf.fixture_id == fixture_id).order_by(
+        Shelf.vertical_position_y.asc()).all()
 
     # When applying, clear existing positions
     if apply:
-        db.query(Position).filter(Position.shelf_id.in_([s.id for s in shelves])).delete(synchronize_session=False)
+        db.query(Position).filter(Position.shelf_id.in_(
+            [s.id for s in shelves])).delete(synchronize_session=False)
 
     recommendations = []
 
@@ -42,11 +45,13 @@ def optimize_shelf_layout(fixture_id: int, db: Session, product_ids=None, apply:
             facings_wide = 1
             # Calculate max facings high based on shelf height (assuming 400mm space between shelves)
             available_height = 400.0
-            facings_high = int(available_height // product.height) if available_height >= product.height else 1
+            facings_high = int(
+                available_height // product.height) if available_height >= product.height else 1
             if facings_high < 1:
                 facings_high = 1
 
-            facings_deep = int(shelf.depth // product.depth) if shelf.depth >= product.depth else 1
+            facings_deep = int(
+                shelf.depth // product.depth) if shelf.depth >= product.depth else 1
             if facings_deep < 1:
                 facings_deep = 1
 

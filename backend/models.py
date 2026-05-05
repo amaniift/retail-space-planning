@@ -1,13 +1,14 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from database import Base
+from .database import Base
 import datetime
+
 
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    role = Column(String, default="viewer") # admin, editor, viewer
+    role = Column(String, default="viewer")  # admin, editor, viewer
 
     comments = relationship("Comment", back_populates="user")
     workflows = relationship("WorkflowState", back_populates="user")
@@ -29,7 +30,8 @@ class WorkflowState(Base):
     __tablename__ = "workflow_states"
     id = Column(Integer, primary_key=True, index=True)
     fixture_id = Column(Integer, ForeignKey("fixtures.id"), unique=True)
-    status = Column(String, default="Draft") # Draft, Review, Approved, Published
+    # Draft, Review, Approved, Published
+    status = Column(String, default="Draft")
     updated_by = Column(Integer, ForeignKey("users.id"))
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -51,7 +53,8 @@ class Fixture(Base):
 
     shelves = relationship("Shelf", back_populates="fixture")
     store = relationship("Store", back_populates="fixtures")
-    workflow = relationship("WorkflowState", back_populates="fixture", uselist=False)
+    workflow = relationship(
+        "WorkflowState", back_populates="fixture", uselist=False)
 
 
 class Shelf(Base):
@@ -79,7 +82,8 @@ class Product(Base):
     color_hex = Column(String)
     image_url = Column(String, nullable=True)
 
-    performance = relationship("PerformanceData", back_populates="product", uselist=False)
+    performance = relationship(
+        "PerformanceData", back_populates="product", uselist=False)
     positions = relationship("Position", back_populates="product")
 
 

@@ -27,12 +27,11 @@ function App() {
 
   return (
     <div style={{ cursor: pendingPlacementProduct ? 'crosshair' : 'default', width: '100vw', height: '100vh' }}>
-      
+
       <WorkflowPanel />
       <FixtureSelector />
       <ProductLibrary />
       <VersionControl />
-      <TemplateLibrary />
       <Scene />
       <AnalyticsPanel />
     </div>
