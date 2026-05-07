@@ -1,9 +1,9 @@
 import random
 from faker import Faker
-from .database import engine, SessionLocal, Base
-from . import models
-from .models import Fixture, Shelf, Product, PerformanceData
-from .optimizer import optimize_shelf_layout
+from database import engine, SessionLocal, Base
+import models
+from models import Fixture, Shelf, Product, PerformanceData
+from optimizer import optimize_shelf_layout
 
 fake = Faker()
 PRODUCT_CATEGORIES = ["Grocery", "Beverage", "Health", "Household"]

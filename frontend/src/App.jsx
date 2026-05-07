@@ -6,6 +6,7 @@ import FixtureSelector from './components/FixtureSelector'
 import VersionControl from './components/VersionControl'
 import TemplateLibrary from './components/TemplateLibrary'
 import WorkflowPanel from './components/WorkflowPanel'
+import AIAssistant from './components/AIAssistant'
 import { useStore } from './store'
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
       <VersionControl />
       <Scene />
       <AnalyticsPanel />
+      <AIAssistant />
     </div>
   )
 }

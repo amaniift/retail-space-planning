@@ -1,4 +1,4 @@
-from .models import Fixture, Shelf, Product, Position, PerformanceData
+from models import Fixture, Shelf, Product, Position, PerformanceData
 from sqlalchemy.orm import Session
 
 

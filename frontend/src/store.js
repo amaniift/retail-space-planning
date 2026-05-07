@@ -191,5 +191,40 @@ export const useStore = create((set) => ({
     }
   },
   theme: 'dark',
-  toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' }))
+  toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+  aiMessages: [],
+  sendAiMessage: async (prompt) => {
+    const state = useStore.getState()
+    const history = state.aiMessages.map(m => ({
+      role: m.role,
+      parts: [m.content]
+    }))
+    
+    const newUserMessage = { role: 'user', content: prompt }
+    set(s => ({ aiMessages: [...s.aiMessages, newUserMessage] }))
+    
+    try {
+      const res = await axios.post('http://localhost:8000/api/ai/chat', { prompt, history })
+      const aiResponse = { role: 'model', content: res.data.message, results: res.data.results }
+      set(s => ({ aiMessages: [...s.aiMessages, aiResponse] }))
+      
+      // If any commands were executed, refresh the data
+      if (res.data.results && res.data.results.length > 0) {
+        const storeId = state.selectedStoreId
+        if (storeId) await state.fetchFixturesForStore(storeId)
+        
+        // If a new fixture was created, select it
+        const createResult = res.data.results.find(r => r.action === 'CREATE_FIXTURE' && r.status === 'success')
+        if (createResult) {
+           await state.fetchFixtureData(createResult.id)
+           set({ selectedFixtureId: createResult.id })
+        } else if (state.selectedFixtureId) {
+           await state.fetchFixtureData(state.selectedFixtureId)
+        }
+      }
+    } catch (e) {
+      console.error(e)
+      set(s => ({ aiMessages: [...s.aiMessages, { role: 'model', content: "Sorry, I'm having trouble connecting to the AI service." }] }))
+    }
+  }
 }))

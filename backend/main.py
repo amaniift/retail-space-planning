@@ -5,10 +5,12 @@ from sqlalchemy.orm import Session
 from collections import Counter
 from typing import List, Optional
 import math
-from . import models, schemas
-from .database import SessionLocal, engine
-from .optimizer import optimize_shelf_layout
+import models, schemas
+from database import SessionLocal, engine
+from optimizer import optimize_shelf_layout
 import datetime
+import ai_service
+import ai_handlers
 
 MIN_DOS = 7.0
 GRID_SNAP_MM = 10.0
@@ -489,3 +491,25 @@ def add_comment(request: schemas.CommentCreateRequest, db: Session = Depends(get
     db.commit()
     db.refresh(comment)
     return comment
+@app.post("/api/ai/chat")
+def ai_chat(request: dict, db: Session = Depends(get_db)):
+    prompt = request.get("prompt")
+    history = request.get("history", [])
+    
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Prompt is required")
+        
+    # Get response from LLM
+    ai_response = ai_service.get_ai_response(prompt, history=history)
+    
+    # Execute commands if any
+    commands = ai_response.get("commands", [])
+    execution_results = []
+    if commands:
+        execution_results = ai_handlers.execute_ai_commands(commands, db)
+        
+    return {
+        "message": ai_response.get("message"),
+        "commands": commands,
+        "results": execution_results
+    }

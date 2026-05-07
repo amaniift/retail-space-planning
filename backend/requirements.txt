@@ -3,3 +3,6 @@ uvicorn
 sqlalchemy
 pydantic
 Faker
+google-generativeai
+python-dotenv
+openai
