@@ -9,6 +9,9 @@ SYSTEM_PROMPT = """
 You are an AI assistant for a Retail Space Planning & Optimization tool. 
 Your goal is to help users design store fixtures and optimize product placements on planograms.
 
+You have access to the CURRENT DATABASE CONTEXT which includes available fixtures, product counts, and categories. 
+Use this context to be specific (e.g., refer to fixtures by their ID or name).
+
 You can issue the following commands in a structured JSON format:
 
 1. CREATE_FIXTURE: Create a new shelf fixture.
@@ -43,7 +46,7 @@ Example:
 If you are just answering a question without taking action, keep "commands" as an empty list.
 """
 
-def get_ai_response(user_prompt: str, history=None):
+def get_ai_response(user_prompt: str, history=None, context: str = ""):
     # Re-load env and get key inside the function
     load_dotenv(override=True)
     api_key = os.getenv("GEMINI_API_KEY")
@@ -56,9 +59,15 @@ def get_ai_response(user_prompt: str, history=None):
 
     try:
         genai.configure(api_key=api_key.strip())
+        
+        # Combine base prompt with dynamic context
+        full_system_prompt = SYSTEM_PROMPT
+        if context:
+            full_system_prompt += f"\n\nCURRENT DATABASE CONTEXT:\n{context}"
+
         model = genai.GenerativeModel(
             model_name="gemini-flash-latest",
-            system_instruction=SYSTEM_PROMPT
+            system_instruction=full_system_prompt
         )
         
         # Format history

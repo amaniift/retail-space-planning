@@ -491,6 +491,28 @@ def add_comment(request: schemas.CommentCreateRequest, db: Session = Depends(get
     db.commit()
     db.refresh(comment)
     return comment
+
+def generate_ai_context(db: Session):
+    # Get all fixtures
+    fixtures = db.query(models.Fixture).all()
+    fixture_summary = []
+    for f in fixtures:
+        fixture_summary.append(f"Fixture ID {f.id}: {f.name} ({f.type}), Dim: {f.width}x{f.height}x{f.depth}mm")
+    
+    # Get product summary
+    product_count = db.query(models.Product).count()
+    categories = db.query(models.Product.category).distinct().all()
+    category_counts = {}
+    for (cat,) in categories:
+        count = db.query(models.Product).filter(models.Product.category == cat).count()
+        category_counts[cat] = count
+        
+    context = "Available Fixtures:\n" + ("\n".join(fixture_summary) if fixture_summary else "None") + "\n\n"
+    context += f"Total Products: {product_count}\n"
+    context += "Categories:\n" + "\n".join([f"- {cat}: {count} products" for cat, count in category_counts.items()])
+    
+    return context
+
 @app.post("/api/ai/chat")
 def ai_chat(request: dict, db: Session = Depends(get_db)):
     prompt = request.get("prompt")
@@ -498,9 +520,12 @@ def ai_chat(request: dict, db: Session = Depends(get_db)):
     
     if not prompt:
         raise HTTPException(status_code=400, detail="Prompt is required")
+    
+    # Generate database context
+    context = generate_ai_context(db)
         
     # Get response from LLM
-    ai_response = ai_service.get_ai_response(prompt, history=history)
+    ai_response = ai_service.get_ai_response(prompt, history=history, context=context)
     
     # Execute commands if any
     commands = ai_response.get("commands", [])
