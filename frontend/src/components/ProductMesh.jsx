@@ -188,7 +188,7 @@ export default function ProductMesh({ positionData, shelfY, allPositions }) {
     </group>
   ) : (
     <PivotControls
-      activeAxes={[true, true, false]}
+      activeAxes={[true, false, false]}
       onDragStart={onDragStart}
       onDrag={onDrag}
       onDragEnd={onDragEnd}

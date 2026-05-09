@@ -193,18 +193,22 @@ export const useStore = create((set) => ({
   theme: 'dark',
   toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
   aiMessages: [],
-  sendAiMessage: async (prompt) => {
+  sendAiMessage: async (prompt, image_data = null) => {
     const state = useStore.getState()
     const history = state.aiMessages.map(m => ({
       role: m.role,
-      parts: [m.content]
+      content: m.content
     }))
     
-    const newUserMessage = { role: 'user', content: prompt }
+    const newUserMessage = { 
+      role: 'user', 
+      content: prompt || (image_data ? "Analyzed image" : ""),
+      image: image_data ? `data:${image_data.mime_type};base64,${image_data.data}` : null
+    }
     set(s => ({ aiMessages: [...s.aiMessages, newUserMessage] }))
     
     try {
-      const res = await axios.post('http://localhost:8000/api/ai/chat', { prompt, history })
+      const res = await axios.post('http://localhost:8000/api/ai/chat', { prompt, history, image_data })
       const aiResponse = { role: 'model', content: res.data.message, results: res.data.results }
       set(s => ({ aiMessages: [...s.aiMessages, aiResponse] }))
       

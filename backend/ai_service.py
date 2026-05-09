@@ -12,6 +12,13 @@ Your goal is to help users design store fixtures and optimize product placements
 You have access to the CURRENT DATABASE CONTEXT which includes available fixtures, product counts, and categories. 
 Use this context to be specific (e.g., refer to fixtures by their ID or name).
 
+If an image is provided:
+1. Estimate the fixture dimensions (Width, Height, Depth) and number of shelves from the image.
+   IMPORTANT: Ensure the 'height' is large enough to provide at least 400-500mm of vertical space between each shelf to accommodate products.
+2. Identify the products or categories in the image.
+3. Match identified products with the best available products in our database context.
+4. Create the fixture and populate it with those products.
+
 You can issue the following commands in a structured JSON format:
 
 1. CREATE_FIXTURE: Create a new shelf fixture.
@@ -46,7 +53,7 @@ Example:
 If you are just answering a question without taking action, keep "commands" as an empty list.
 """
 
-def get_ai_response(user_prompt: str, history=None, context: str = ""):
+def get_ai_response(user_prompt: str, history=None, context: str = "", image_data=None):
     # Re-load env and get key inside the function
     load_dotenv(override=True)
     api_key = os.getenv("GEMINI_API_KEY")
@@ -80,7 +87,17 @@ def get_ai_response(user_prompt: str, history=None, context: str = ""):
                 formatted_history.append({"role": role, "parts": [content]})
 
         chat = model.start_chat(history=formatted_history)
-        response = chat.send_message(user_prompt)
+        
+        # Prepare parts for multimodal support
+        parts = [user_prompt]
+        if image_data:
+            # image_data should be a dict with mime_type and data (base64)
+            parts.append({
+                "mime_type": image_data["mime_type"],
+                "data": image_data["data"]
+            })
+            
+        response = chat.send_message(parts)
         
         # Try to parse the JSON response
         text = response.text

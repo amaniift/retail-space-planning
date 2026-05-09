@@ -244,8 +244,13 @@ def create_fixture(request: schemas.FixtureCreateRequest, db: Session = Depends(
     db.commit()
     db.refresh(fixture)
 
-    shelf_spacing = 400.0
-    for index in range(request.number_of_shelves):
+    num_shelves = request.number_of_shelves
+    if num_shelves > 1:
+        shelf_spacing = (request.height - request.base_height) / (num_shelves - 1)
+    else:
+        shelf_spacing = 0
+
+    for index in range(num_shelves):
         shelf = models.Shelf(
             fixture_id=fixture.id,
             vertical_position_y=request.base_height + index * shelf_spacing,
@@ -517,15 +522,16 @@ def generate_ai_context(db: Session):
 def ai_chat(request: dict, db: Session = Depends(get_db)):
     prompt = request.get("prompt")
     history = request.get("history", [])
+    image_data = request.get("image_data") # Expecting {mime_type: str, data: str}
     
-    if not prompt:
-        raise HTTPException(status_code=400, detail="Prompt is required")
+    if not prompt and not image_data:
+        raise HTTPException(status_code=400, detail="Prompt or Image is required")
     
     # Generate database context
     context = generate_ai_context(db)
         
     # Get response from LLM
-    ai_response = ai_service.get_ai_response(prompt, history=history, context=context)
+    ai_response = ai_service.get_ai_response(prompt, history=history, context=context, image_data=image_data)
     
     # Execute commands if any
     commands = ai_response.get("commands", [])

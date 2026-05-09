@@ -29,11 +29,17 @@ def execute_ai_commands(commands: list, db: Session):
                 db.refresh(fixture)
                 last_created_id = fixture.id
                 
-                # Add shelves
-                for i in range(fixture.number_of_shelves):
+                # Add shelves - distributed evenly
+                num_s = fixture.number_of_shelves
+                if num_s > 1:
+                    spacing = (fixture.height - fixture.base_height) / (num_s - 1)
+                else:
+                    spacing = 0
+
+                for i in range(num_s):
                     shelf = models.Shelf(
                         fixture_id=fixture.id,
-                        vertical_position_y=fixture.base_height + i * 400.0,
+                        vertical_position_y=fixture.base_height + i * spacing,
                         width=fixture.width,
                         depth=fixture.depth
                     )
@@ -58,17 +64,24 @@ def execute_ai_commands(commands: list, db: Session):
                     fid = last_created_id
                 
                 category = params.get("category")
-                if fid and category:
-                    # Find products in this category
-                    products = db.query(models.Product).filter(models.Product.category == category).all()
-                    p_ids = [p.id for p in products]
+                product_ids = params.get("product_ids")
+                
+                if fid:
+                    p_ids = []
+                    if product_ids:
+                        p_ids = product_ids
+                    elif category:
+                        # Find products in this category
+                        products = db.query(models.Product).filter(models.Product.category == category).all()
+                        p_ids = [p.id for p in products]
+                    
                     if p_ids:
                         optimize_shelf_layout(fid, db, product_ids=p_ids, apply=True)
                         results.append({"action": action, "status": "success", "id": fid, "count": len(p_ids)})
                     else:
-                        results.append({"action": action, "status": "failed", "reason": f"No products in category {category}"})
+                        results.append({"action": action, "status": "failed", "reason": "No products found to populate"})
                 else:
-                    results.append({"action": action, "status": "failed", "reason": "Missing fixture_id or category"})
+                    results.append({"action": action, "status": "failed", "reason": "Missing fixture_id"})
                     
         except Exception as e:
             print(f"Error executing command {action}: {e}")

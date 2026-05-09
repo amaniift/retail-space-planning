@@ -60,7 +60,7 @@ export default function Fixture({ data }) {
       {data.shelves.map((shelf) => (
         <group key={shelf.id}>
           <mesh
-            position={[shelf.width / 2, shelf.vertical_position_y, 0]}
+            position={[shelf.width / 2, shelf.vertical_position_y - 10, 0]}
             onClick={(e) => handleShelfClick(e, shelf)}
             onPointerOver={(e) => { if (pendingPlacementProduct) document.body.style.cursor = 'crosshair' }}
             onPointerOut={(e) => { if (pendingPlacementProduct) document.body.style.cursor = 'default' }}

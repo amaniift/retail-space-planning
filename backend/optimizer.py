@@ -33,23 +33,33 @@ def optimize_shelf_layout(fixture_id: int, db: Session, product_ids=None, apply:
     product_idx = 0
     total_products = len(products)
 
-    for shelf in shelves:
+    for i, shelf in enumerate(shelves):
         current_x = 0.0
+        
+        # Calculate actual available height to the next shelf or fixture top
+        if i < len(shelves) - 1:
+            gap = shelves[i+1].vertical_position_y - shelf.vertical_position_y
+        else:
+            gap = fixture.height - shelf.vertical_position_y
+            
+        # Subtract shelf thickness (approx 20mm) to get clear space
+        available_height = max(0, gap - 20.0)
 
         while product_idx < total_products:
             product = products[product_idx]
+            
+            # Skip product if it's taller than the available space
+            if product.height > available_height:
+                product_idx += 1
+                continue
+
             perf = product.performance
             daily_movement = perf.daily_unit_movement if perf and perf.daily_unit_movement > 0 else 0.1
 
-            # Start with 1 facing
+            # Calculate how many can fit vertically
+            facings_high = max(1, int(available_height // product.height))
             facings_wide = 1
-            # Calculate max facings high based on shelf height (assuming 400mm space between shelves)
-            available_height = 400.0
-            facings_high = int(
-                available_height // product.height) if available_height >= product.height else 1
-            if facings_high < 1:
-                facings_high = 1
-
+            
             facings_deep = int(
                 shelf.depth // product.depth) if shelf.depth >= product.depth else 1
             if facings_deep < 1:
